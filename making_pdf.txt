@@ -1,0 +1,1 @@
+To view the README.md as a pdf use\n pandoc README.md -o read.pdf\n to generate the pdf.
