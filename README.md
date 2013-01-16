@@ -37,6 +37,22 @@ James thinks that the positional weights should be exponentially decaying from t
 ### Communities
 
 ## Colaboration with CJ Hutto
+We can compute BC on the large network and the restrict to a rumor (using a regex). Look for a correlation between the difference of 
+BC_all, BC_topic_
+and the truth or falsity of the rumor.
+if the source of deception is outside of twitter allows the first person to be truthfull. Looking at similar tweets at the same time, then there are multiple sources.
+Put all of the rumor tweets into a timeline and track the breadth of the timeline and the Min, Q1, Mean Q2, Q3, Max BC of the users tweeting it is.
+We could show that a tweet goes from a medium BC node to a high BC node and then fans out if it is false and spreads.
+but if it is true and spreads, then the BC stays low for a while at the begining and then becomes steadily higher until it fans out.
+This corresponds to falsehoods spreading by decieving an influential source, and then freeloading on his influence. 
+A truth will spread by convincing people. Thus we should look at the edge betweeness, if a transfer of information leads to a big disemination and that is the only source.
+Then it might be more likely false.
+
+
+We can get some ground truth rumors from FEMA.
+IEEE Social Com
+March madness using UIUC
+Lags and Leads of common events.
 ### From CJ Hutto email
 =https://mail.google.com/mail/ca/u/0/#apps/cj/13c1fb675dd7c042=
 
