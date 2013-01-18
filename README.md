@@ -1,6 +1,21 @@
 # Case Study using STINGER for social media analysis
 In this case study we use Twitter data collected around the impact of hurricane sandy to show how social media can be analyzed using the STINGER graph library.
 
+## Getting Ready
++ Install ADAMS-STINGER from Rob.
+    - `make install`...
++ Prepare your workspace.
+    We assume you have a layout of 
+    - `./code/stinger`
+    - `./data/`
+    - `./output`
+    - `./scripts/`
++ Write config file see [configuration syntax](#config_syntax)
+ `./code/stinger/config.h`
++ Test
+    - `./code/stinger/main data/ output/`
+    This should build the graph and give you a summary of it to stdout.
+    It will segfault on the seedset expansion
 ## Description of DATA collected
 During the event of hurricane Sandy, we collected tweets using the hashtag list
  - sandy
@@ -13,13 +28,20 @@ These were collected as json objects and then a graph was extracted.
 The graph of interest is the at (@) mentions network where two users are connected if one has mentioned the other in a tweet. We collected a symmetric graph by adding both directions of the edge. This resulted in a graph containing <#> vertices and <#> edges.
 
 ## Kernels
+
 ### Degree distribution
 Describe the commands for computing degree distribution
+
 ### Connected Components
 List commands 
 We found that the distribution of component sizes looks like...
+
 ### Betwenness Centrality BC
-BC can be computed using the commands ...
+BC can be computed using the command
+    
+   `./code/stinger/main ./data/ ./output -a b`
+
+
 head BC.csv
 We find that the most central users are the media outlets and government officials. This confirms the findings in Ediger et al. The interesting things are the dynamics of this list which will be discussed later <pointer to discussion>.
 ### community detection
@@ -34,14 +56,17 @@ This seems to be the most useful
 $\sum_{i<j} p_i p_j [\sigma(i) > \sigma(j)]$
 Total number of inversions with positional weights.
 James thinks that the positional weights should be exponentially decaying from the top. That way we can ignore the differences at the bottom which will be mostly noise.
+
 ### Communities
 
 ## Colaboration with CJ Hutto
+
 ### Predicting truth using differential centralities
 We can compute BC on the large network and the restrict to a rumor (using a regex). Look for a correlation between the difference of 
 BC_all, BC_topic_
 and the truth or falsity of the rumor.
 if the source of deception is outside of twitter allows the first person to be truthfull. Looking at similar tweets at the same time, then there are multiple sources.
+
 ### Tracking Spread of topics
 Put all of the rumor tweets into a timeline and track the breadth of the timeline and the Min, Q1, Mean Q2, Q3, Max BC of the users tweeting it is. 
 
@@ -88,3 +113,7 @@ I can handle getting IRB approval and design the questionnaire. We can use your 
 
 We might aim for a publication at IEEE SocialCom conference...
 ## Conclusions
+
+# Appendix
+
+## config_syntax
