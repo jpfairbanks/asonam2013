@@ -37,20 +37,33 @@ James thinks that the positional weights should be exponentially decaying from t
 ### Communities
 
 ## Colaboration with CJ Hutto
+### Predicting truth using differential centralities
 We can compute BC on the large network and the restrict to a rumor (using a regex). Look for a correlation between the difference of 
 BC_all, BC_topic_
 and the truth or falsity of the rumor.
 if the source of deception is outside of twitter allows the first person to be truthfull. Looking at similar tweets at the same time, then there are multiple sources.
-Put all of the rumor tweets into a timeline and track the breadth of the timeline and the Min, Q1, Mean Q2, Q3, Max BC of the users tweeting it is.
-We could show that a tweet goes from a medium BC node to a high BC node and then fans out if it is false and spreads.
-but if it is true and spreads, then the BC stays low for a while at the begining and then becomes steadily higher until it fans out.
-This corresponds to falsehoods spreading by decieving an influential source, and then freeloading on his influence. 
+### Tracking Spread of topics
+Put all of the rumor tweets into a timeline and track the breadth of the timeline and the Min, Q1, Mean Q2, Q3, Max BC of the users tweeting it is. 
+
+Tracking breadth of the filtered network using only edges that go forward in time. 
+* Filter network using either hashtags or regex
+* Do a single edge pass to find the first edges
+    + There might be multiple sources of the rumor if it is generate offline
+* BFS from there using only edges that increase in time to estimate diameter at each batch step
+    + can we measure if it is growing out one vertex at a time?
+    + If we don't mark vertices as we see them we can measure if people focus on something for a while or tweet once and move on.
+* Keep track of the edges per minute as we add edges.
+    + this could be a mean of $t_k-t_{0}$ for each batch of k edges
+    + or a sliding window $t_i - t_{i-k} for all $e_i$ in the series
+
+### Tracking BC over the course of a rumor spread
+We could show that a tweet goes from a medium BC node to a high BC node and then fans out if it is false and spreads. Perhaps if it is true and spreads, then the BC stays low for a while at the begining and then becomes steadily higher until it fans out. This corresponds to falsehoods spreading by decieving an influential source, and then freeloading on his influence. 
+
 A truth will spread by convincing people. Thus we should look at the edge betweeness, if a transfer of information leads to a big disemination and that is the only source.
 Then it might be more likely false.
 
-
+### Examples of Rumors
 We can get some ground truth rumors from FEMA.
-IEEE Social Com
 March madness using UIUC
 Lags and Leads of common events.
 ### From CJ Hutto email
@@ -75,4 +88,3 @@ I can handle getting IRB approval and design the questionnaire. We can use your 
 
 We might aim for a publication at IEEE SocialCom conference...
 ## Conclusions
-
