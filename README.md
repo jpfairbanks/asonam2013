@@ -6,16 +6,66 @@ In this case study we use Twitter data collected around the impact of hurricane 
     - `make install`...
 + Prepare your workspace.
     We assume you have a layout of 
-    - `./code/stinger`
-    - `./data/`
-    - `./output`
-    - `./scripts/`
+    - `code/stinger`
+    - `data/`
+    - `output`
+    - `scripts/`
 + Write config file see [configuration syntax](#config_syntax)
- `./code/stinger/config.h`
-+ Test
-    - `./code/stinger/main data/ output/`
-    This should build the graph and give you a summary of it to stdout.
-    It will segfault on the seedset expansion
+ `code/stinger/config.h`
+
+Here is an example of executing the clustering and connected component kernel
+
+~~~~~~~~~~
+>> code/stinger/main data/ output/ -a c
+Up and running. Config...
+        reading-from: data/
+        writing-to: output/
+        client-server: stand-alone
+        graph-tables-enabled:
+                GTYPE_EMAIL_EVENT
+                GTYPE_FILE_EVENT
+                GTYPE_IM_EVENT
+                GTYPE_LOGON
+                GTYPE_PRINTER_EVENT
+                GTYPE_PROCESS_EVENT
+                GTYPE_REGISTRY_EVENT
+                GTYPE_URL_EVENT
+                GTYPE_USER_EMAIL
+                GTYPE_USER_IM
+        algorithms-enabled:
+                ATYPE_GTRI2
+Building Graph...
+        Read 1238109 emailEvent rows in 1.705518 seconds
+        tree to stinger 1.460194 seconds
+Graph(s) created. Running stats...
+        Vertices: 662575
+        Edges: 2189965
+        EBlocks[ETYPE_EMAIL_ALIAS]: 0
+        EBlocks[ETYPE_EMAIL_FROM]: 725575
+        EBlocks[ETYPE_EMAIL_TO]: 0
+        EBlocks[ETYPE_ACCESSED]: 0
+        EBlocks[ETYPE_LOGON]: 0
+        EBlocks[ETYPE_LOGOFF]: 0
+        EBlocks[ETYPE_PRINT]: 0
+        EBlocks[ETYPE_IM_FROM]: 0
+        EBlocks[ETYPE_IM_TO]: 0
+        EBlocks[ETYPE_IM_ALIAS]: 0
+        EBlocks[ETYPE_CLIPBOARD]: 0
+        EBlocks[ETYPE_REGISTRY]: 0
+        Consistency 0
+        Done. 0.082313 seconds
+Beginning clustering...
+        cluster_time 1.017081 seconds
+        clusters 2313
+        clusters_edges 5528
+        clustering_iterations 7
+Beginning connected components...
+        Done. 0.125424 seconds 49204 components
+Algorithms have completed. Closing.
+~~~~~~~~~~~~
+
+This should build the graph and give you a summary of it to stdout.
+It will segfault on the seedset expansion
 ## Description of DATA collected
 During the event of hurricane Sandy, we collected tweets using the hashtag list
  - sandy
@@ -44,9 +94,11 @@ BC can be computed using the command
 
 head BC.csv
 We find that the most central users are the media outlets and government officials. This confirms the findings in Ediger et al. The interesting things are the dynamics of this list which will be discussed later <pointer to discussion>.
+
 ### community detection
 List commands and files generated.
 Lets crack open a medium sized community and see which users it has.
+
 ## Data Analysis
 
 ### BC
@@ -88,30 +140,35 @@ A truth will spread by convincing people. Thus we should look at the edge betwee
 Then it might be more likely false.
 
 ### Examples of Rumors
+
 We can get some ground truth rumors from FEMA.
 March madness using UIUC
 Lags and Leads of common events.
+
 ### From CJ Hutto email
-=https://mail.google.com/mail/ca/u/0/#apps/cj/13c1fb675dd7c042=
+
+[gmail link](https://mail.google.com/mail/ca/u/0/#apps/cj/13c1fb675dd7c042=)
 
 Something that I think would fit into a collaborative study would be something like comparing various computed measures of influence, such as:
-- number of followers
-- follower-to-following ratio (FFR)
-- lists-to-followers ratio (LFR) http://t.co/TZNgEP3e 
-- number of RTs
-- avg breadth/distance of RTs, 
-- number of @mentions (other than RTs)
-- network centrality (raw)
-- centrality w/in @mention network for given hashtag topic(s)
-- Klout influence score
-- PeerIndex influence score
-- tie strength (as described by Gilbert 2012).
+
+   - number of followers
+   - follower-to-following ratio (FFR)
+   - lists-to-followers ratio (LFR) http://t.co/TZNgEP3e 
+   - number of RTs
+   - avg breadth/distance of RTs, 
+   - number of @mentions (other than RTs)
+   - network centrality (raw)
+   - centrality w/in @mention network for given hashtag topic(s)
+   - Klout influence score
+   - PeerIndex influence score
+   - tie strength (as described by Gilbert 2012).
 
 And compare it with a "ground truth" measure of influence... where we ask folks to self report (via survey questionnaire) who in the network was influential both generally and for the given topic. 
 
 I can handle getting IRB approval and design the questionnaire. We can use your set of users in the #Sandy @mention network as our sample (we already have betweeness centrality, so would just need to compute the other influence metrics for comparison). 
 
 We might aim for a publication at IEEE SocialCom conference...
+
 ## Conclusions
 
 # Appendix
