@@ -1,7 +1,7 @@
 # Case Study using STINGER for social media analysis
 In this case study we use Twitter data collected around the impact of hurricane sandy to show how social media can be analyzed using the STINGER graph library.
 
-## Getting Ready
+## Getting Started
 + Install ADAMS-STINGER from Rob.
     - `make install`...
 + Prepare your workspace.
