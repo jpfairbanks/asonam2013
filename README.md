@@ -14,6 +14,7 @@ In this case study we use Twitter data collected around the impact of hurricane 
  `code/stinger/config.h`
 
 Here is an example of executing the clustering and connected component kernel
+This should build the graph and give you a summary of it to stdout.
 
 ~~~~~~~~~~
 >> code/stinger/main data/ output/ -a c
@@ -64,8 +65,10 @@ Beginning connected components...
 Algorithms have completed. Closing.
 ~~~~~~~~~~~~
 
-This should build the graph and give you a summary of it to stdout.
-It will segfault on the seedset expansion
+The -a c is instructing the program to run the **a**lgorithm named **c**lustering-components. Without the algorithm the program will attempt all kernels. If the necessary data files are missing, then the program will fail on initializing them. We can use clustering-components because all of the necessary data is in the graph specification file that is included by the configuration file.
+
+
+
 ## Description of DATA collected
 During the event of hurricane Sandy, we collected tweets using the hashtag list
  - sandy
@@ -89,10 +92,10 @@ We found that the distribution of component sizes looks like...
 ### Betwenness Centrality BC
 BC can be computed using the command
     
-   `./code/stinger/main ./data/ ./output -a b`
+   `./code/stinger/main data/ output -a b`
 
 
-head BC.csv
+TODO: include `head BC.csv`
 We find that the most central users are the media outlets and government officials. This confirms the findings in Ediger et al. The interesting things are the dynamics of this list which will be discussed later <pointer to discussion>.
 
 ### community detection
@@ -122,7 +125,8 @@ if the source of deception is outside of twitter allows the first person to be t
 ### Tracking Spread of topics
 Put all of the rumor tweets into a timeline and track the breadth of the timeline and the Min, Q1, Mean Q2, Q3, Max BC of the users tweeting it is. 
 
-Tracking breadth of the filtered network using only edges that go forward in time. 
+Tracking breadth of the filtered network using only edges that go forward in time.
+
 * Filter network using either hashtags or regex
 * Do a single edge pass to find the first edges
     + There might be multiple sources of the rumor if it is generate offline
@@ -131,7 +135,7 @@ Tracking breadth of the filtered network using only edges that go forward in tim
     + If we don't mark vertices as we see them we can measure if people focus on something for a while or tweet once and move on.
 * Keep track of the edges per minute as we add edges.
     + this could be a mean of $t_k-t_{0}$ for each batch of k edges
-    + or a sliding window $t_i - t_{i-k} for all $e_i$ in the series
+    + or a sliding window $t_i - t_{i-k}$ for all $e_i$ in the series
 
 ### Tracking BC over the course of a rumor spread
 We could show that a tweet goes from a medium BC node to a high BC node and then fans out if it is false and spreads. Perhaps if it is true and spreads, then the BC stays low for a while at the begining and then becomes steadily higher until it fans out. This corresponds to falsehoods spreading by decieving an influential source, and then freeloading on his influence. 
