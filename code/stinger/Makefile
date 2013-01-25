@@ -24,6 +24,9 @@ all: main
 main: main.c $(GTRI1_OBJ) $(BC_OBJ) $(GTRI2_OBJ) $(GTRI3_OBJ) $(GTRI6_OBJ) 
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LD_LIBS)
 
+sandy: sandy.c $(GTRI1_OBJ) $(BC_OBJ) $(GTRI2_OBJ) $(GTRI3_OBJ) $(GTRI6_OBJ) 
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LD_LIBS)
+
 obj/gtri-1/x86-full-empty.o: src/gtri-1/x86-full-empty.c
 	$(subst O1,O0,$(subst O2,O0,$(subst O3,O0,$(CC) $(CPPFLAGS) $(CFLAGS) -c $^ -o $@ $(LDFLAGS) $(LD_LIBS))))
 

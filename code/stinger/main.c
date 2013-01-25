@@ -104,6 +104,8 @@ const char * vtype_strings [] = {
   TYPE(ATYPE_GTRI3), \
   TYPE(ATYPE_GTRIBC), \
   TYPE(ATYPE_GTRI6), \
+  TYPE(ATYPE_DEGDIST), \
+  TYPE(ATYPE_DEG), \
   TYPE(MAX_ATYPE)
 
 #define TYPE(X) X
@@ -399,7 +401,7 @@ main(int argc, char *argv[])
    * GTRI-6
    * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
   //this is disabled because it doesn't work
-  if(conf.algorithms[ATYPE_GTRI6]) & 0 {
+  if(conf.algorithms[ATYPE_GTRI6] && 0) {
 
     printf("Beginning belief propogation...\n");
 
@@ -482,6 +484,53 @@ main(int argc, char *argv[])
     }
   }
 
+  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+   * Degree distribution histogram
+   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  if(conf.algorithms[ATYPE_DEGDIST]) {
+    printf("Histogramming degree distribution...\n");
+    uint64_t max = 0;
+    for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+      if(max < stinger_outdegree(S, v))
+	max = stinger_outdegree(S,v);
+    }
+
+    uint64_t * histogram = calloc(sizeof(uint64_t), max+1);
+    for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+      histogram[stinger_outdegree(S,v)]++;
+    }
+
+    char ddfilename[1024];
+    sprintf(ddfilename, "%s/degdist.csv", argv[2]);
+    FILE * ddfile = fopen(ddfilename, "w");
+    for(uint64_t d = 0; d < max+1; d++) {
+      if(histogram[d]) {
+	fprintf(ddfile, "%ld, %ld\n", d, histogram[d]);
+      }
+    }
+    fclose(ddfile);
+  }
+
+  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+   * Print degrees
+   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  if(conf.algorithms[ATYPE_DEG]) {
+    printf("Printing degrees...\n");
+    char degfilename[1024];
+    sprintf(degfilename, "%s/degrees.csv", argv[2]);
+    FILE * degfile = fopen(degfilename, "w");
+    for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+      if(stinger_vtype(S,v) != VTYPE_NONE) {
+	char * id;
+	int64_t id_len;
+	stinger_vtx_to_physID_direct(S, v, &id, &id_len);
+	fprintf(degfile, "%.*s, %ld, %ld\n", (int) id_len, id, v, stinger_outdegree(S,v));
+      }
+    }
+    fclose(degfile);
+    printf("  done.\n");
+  }
+
   printf("Algorithms have completed. Closing.\n"); fflush(stdout);
   if(conf.is_client) {
     stinger_shared_unmap(S, S_shared, argv[1]);
@@ -527,6 +576,16 @@ parse_config(int argc, char ** argv, global_config * conf) {
               case 'B':
               case 'b': {
                 conf->algorithms[ATYPE_GTRIBC] = 1;
+              } break;
+
+              case 'd':
+              case 'D': {
+                conf->algorithms[ATYPE_DEGDIST] = 1;
+              } break;
+
+              case 'p':
+              case 'P': {
+                conf->algorithms[ATYPE_DEG] = 1;
               } break;
 
               case 'c':
@@ -732,6 +791,12 @@ printf(
 "\n"
 "  GTRI-6 Evidence combination\n"
 "  Accepted strings: 6 e E evidence [any string starting with e or E]\n"
+"\n"
+"  Degree Distribution" 
+"  Accepted Strings: d D degreedistribution [any string starting with d or D]\n" 
+"\n"
+"  Print Degrees" 
+"  Accepted Strings: p P printdegree [any string starting with d or D]\n" 
 "\n"
 "* Accepted Table Names *\n"
 "  emailEvent \n"
