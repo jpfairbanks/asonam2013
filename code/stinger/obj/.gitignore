@@ -1,0 +1,9 @@
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore
+!gtri-1
+!gtri-2
+!gtri-3
+!gtri-6
+!bc

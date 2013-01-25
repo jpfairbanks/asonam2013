@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/graphs/!svn/ver/490/stinger/trunk/src
+END
+xmalloc.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/graphs/!svn/ver/462/stinger/trunk/src/xmalloc.c
+END
+timer.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/graphs/!svn/ver/431/stinger/trunk/src/timer.c
+END
+x86-full-empty.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/graphs/!svn/ver/474/stinger/trunk/src/x86-full-empty.c
+END
+stinger-iterator.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/graphs/!svn/ver/464/stinger/trunk/src/stinger-iterator.c
+END
+stinger-deprecated.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/graphs/!svn/ver/464/stinger/trunk/src/stinger-deprecated.c
+END
+stinger-utils.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/graphs/!svn/ver/481/stinger/trunk/src/stinger-utils.c
+END
+stinger-physmap.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/graphs/!svn/ver/452/stinger/trunk/src/stinger-physmap.c
+END
+stinger.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/graphs/!svn/ver/494/stinger/trunk/src/stinger.c
+END

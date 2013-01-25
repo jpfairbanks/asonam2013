@@ -1,0 +1,12 @@
+set @start='2012-08-01';
+set @end='2012-08-31';
+select evidenceID,workstationID,eventDate,fromEmailID,emailBID,direction,fromuserID,userBID                into outfile '/tmp/august/email.csv'      fields terminated by ',' lines terminated by '\n' from emailEvent    where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,fileActionID,fileNameID,srcPathID,destPathID into outfile '/tmp/august/file.csv'       fields terminated by ',' lines terminated by '\n' from fileEvent     where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,isLogon                                into outfile '/tmp/august/logon.csv'      fields terminated by ',' lines terminated by '\n' from logon         where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,printerID,docPathID                      into outfile '/tmp/august/printer.csv'    fields terminated by ',' lines terminated by '\n' from printerEvent  where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,applicationID                          into outfile '/tmp/august/process.csv'    fields terminated by ',' lines terminated by '\n' from processEvent  where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,path                                   into outfile '/tmp/august/registry.csv'   fields terminated by ',' lines terminated by '\n' from registryEvent where eventDate between @start and @end;
+select evidenceID,workstationID,eventDate,userID,urlID,domainID,urlAction               into outfile '/tmp/august/url.csv'        fields terminated by ',' lines terminated by '\n' from urlEvent      where eventDate between @start and @end;
+select userID,emailID                                                                   into outfile '/tmp/august/userEmail.csv'  fields terminated by ',' lines terminated by '\n' from userEmail     where userID is not null;
+connect prodigalresult;
+select nodeID,algoID,score                                                              into outfile '/tmp/august/scores.csv'	fields terminated by ',' lines terminated by '\n' from resultScores;
