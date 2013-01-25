@@ -70,6 +70,12 @@ void
 parse_config(int argc, char ** argv, config_t * config);
 
 void
+histogram(struct stinger * S, uint64_t * labels, char * name, int64_t iteration);
+
+void
+histogram_float(struct stinger * S, float * scores, char * name, int64_t iteration);
+
+void
 REDUCTION(float_t** finalResultArray,float_t** parallelArray,int32_t threadCount);
 
 
@@ -145,8 +151,17 @@ int main(int argc, char *argv[]) {
   }
 
   /* do first round of algorithms */
+  printf("Clustering...\n");
+  tic();
   static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
+  printf("\tDone... %lf seconds \n", toc());
+  histogram(S, matches, "communities", 0);
+
+  printf("Components...\n");
+  tic();
   num_components = connected_components(S, components, STINGER_MAX_LVERTICES);
+  printf("\tDone... %lf seconds \n", toc());
+  histogram(S, components, "components", 0);
 
   {
     printf("\tPicking roots\n");
@@ -168,6 +183,7 @@ int main(int argc, char *argv[]) {
                ppArray,timePerThread,selectedRoots,rootsPerThread);
     REDUCTION(finalBC,totalBCSS,threadCount);
     printf("\tDone... %lf seconds \n", toc());
+    histogram_float(S, finalBC[0], "bc", 0);
   }
 
   /* start batching */
@@ -196,11 +212,13 @@ int main(int argc, char *argv[]) {
     tic();
     static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
     printf("\tDone... %lf seconds \n", toc());
+    histogram(S, matches, "communities", b+1);
 
     printf("Components...\n");
     tic();
     num_components = connected_components(S, components, STINGER_MAX_LVERTICES);
     printf("\tDone... %lf seconds \n", toc());
+    histogram(S, components, "components", b+1);
 
     {
       printf("BC: Picking roots\n");
@@ -222,6 +240,7 @@ int main(int argc, char *argv[]) {
 		 ppArray,timePerThread,selectedRoots,rootsPerThread);
       REDUCTION(finalBC,totalBCSS,threadCount);
       printf("\tDone... %lf seconds \n", toc());
+      histogram_float(S, finalBC[0], "bc", b+1);
     }
   }
 
@@ -304,6 +323,69 @@ parse_config(int argc, char ** argv, config_t * config) {
 	  } break;
       }
     }
+  }
+}
+
+void
+histogram(struct stinger * S, uint64_t * labels, char * name, int64_t iteration) {
+  uint64_t * histogram = xcalloc(sizeof(uint64_t), STINGER_MAX_LVERTICES);
+  uint64_t * sizes = xcalloc(sizeof(uint64_t), STINGER_MAX_LVERTICES);
+
+  for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+    if(stinger_vtype(S, v) != VTYPE_NONE) {
+      sizes[labels[v]]++;
+    }
+  }
+
+  for(uint64_t v = 1; v < STINGER_MAX_LVERTICES; v++) {
+    histogram[sizes[v]]++;
+  }
+
+  free(sizes);
+
+  char filename[1024];
+  sprintf(filename, "%s.%ld.csv", name, iteration);
+  FILE * fp = fopen(filename, "w");
+  for(uint64_t v = 1; v < STINGER_MAX_LVERTICES; v++) {
+    if(histogram[v]) {
+      fprintf(fp, "%ld, %ld\n", v, histogram[v]);
+    }
+  }
+  fclose(fp);
+  free(histogram);
+}
+
+void
+histogram_float(struct stinger * S, float * scores, char * name, int64_t iteration) {
+  int64_t max = 0;
+  for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+    if(stinger_vtype(S, v) != VTYPE_NONE) {
+      if((int64_t)(scores[v]) > max) {
+	max = (int64_t) (scores[v]);
+      }
+    }
+  }
+
+  uint64_t * histogram = xcalloc(sizeof(uint64_t), (max+2));
+  
+  if(histogram) {
+    for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+      histogram[(int64_t)(scores[v])]++;
+    }
+    printf("Here we are\n");
+
+    char filename[1024];
+    sprintf(filename, "%s.%ld.csv", name, iteration);
+    FILE * fp = fopen(filename, "w");
+    for(uint64_t v = 0; v < max+2; v++) {
+      if(histogram[v]) {
+	fprintf(fp, "%ld, %ld\n", v, histogram[v]);
+      }
+    }
+    fclose(fp);
+    free(histogram);
+  } else {
+    printf(" FAIL \n"); fflush(stdout);
   }
 }
 
