@@ -43,6 +43,10 @@ these summary statistics.
 Here is an example of executing the clustering and connected component kernel
 This should build the graph and give you a summary of it to stdout.
 
+TODO: this has changed so you have to cat graph.csv|sandy.c and it will run
+everything. This interface will change again when rob makes his function
+registration system.
+
 ~~~~~~~~~~
 >> code/stinger/main data/ output/ -a c
 Up and running. Config...
