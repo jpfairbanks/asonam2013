@@ -1,0 +1,1 @@
+--batchsize "config->batch_size = atol(argv[i+1]);" --initialsize "config->initial_size = atol(argv[i+1]);" --numbatches "config->max_batches = atol(argv[i+1]);" -b "config->batch_size = atol(argv[i+1]);" -i "config->initial_size = atol(argv[i+1]);" -n "config->max_batches = atol(argv[i+1]);" --path "config->path = argv[i+1];" -p "config->path = argv[i+1];"

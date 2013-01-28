@@ -61,6 +61,7 @@ typedef struct config {
   int64_t initial_size;
   int64_t batch_size;
   int64_t max_batches;
+  char * path;
 } config_t;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
@@ -94,6 +95,13 @@ int main(int argc, char *argv[]) {
   char * name = "/testing";
   S = stinger_shared_new(&S_shared, &name);
   S_cluster = stinger_shared_private(&S_cluster_shared, name);
+
+  char comp_base[1024];
+  char comm_base[1024];
+  char betc_base[1024];
+  sprintf(comp_base, "%s/components", config.path ? config.path : "");
+  sprintf(comm_base, "%s/communities", config.path ? config.path : "");
+  sprintf(betc_base, "%s/bc", config.path ? config.path : "");
 
   uint64_t threadCount = 1;
   #if defined(_OPENMP)
@@ -155,14 +163,14 @@ int main(int argc, char *argv[]) {
   tic();
   static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
   printf("\tDone... %lf seconds \n", toc());
-  histogram(S, matches, "communities", 0);
+  histogram(S, matches, comm_base, 0);
   free(matches);
 
   printf("Components...\n");
   tic();
   num_components = connected_components(S, components, STINGER_MAX_LVERTICES);
   printf("\tDone... %lf seconds \n", toc());
-  histogram(S, components, "components", 0);
+  histogram(S, components, comp_base, 0);
 
   {
     printf("\tPicking roots\n");
@@ -184,7 +192,7 @@ int main(int argc, char *argv[]) {
                ppArray,timePerThread,selectedRoots,rootsPerThread);
     REDUCTION(finalBC,totalBCSS,threadCount);
     printf("\tDone... %lf seconds \n", toc());
-    histogram_float(S, finalBC[0], "bc", 0);
+    histogram_float(S, finalBC[0], betc_base, 0);
   }
 
   /* start batching */
@@ -217,7 +225,7 @@ int main(int argc, char *argv[]) {
     } STINGER_PARALLEL_FORALL_EDGES_END();
     static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
     printf("\tDone... %lf seconds \n", toc());
-    histogram(S, matches, "communities", b+1);
+    histogram(S, matches, comm_base, b+1);
     free(matches);
     stinger_free_all(S_cluster);
 
@@ -225,7 +233,7 @@ int main(int argc, char *argv[]) {
     tic();
     num_components = connected_components(S, components, STINGER_MAX_LVERTICES);
     printf("\tDone... %lf seconds \n", toc());
-    histogram(S, components, "components", b+1);
+    histogram(S, components, comp_base, b+1);
 
     {
       printf("BC: Picking roots\n");
@@ -247,7 +255,7 @@ int main(int argc, char *argv[]) {
 		 ppArray,timePerThread,selectedRoots,rootsPerThread);
       REDUCTION(finalBC,totalBCSS,threadCount);
       printf("\tDone... %lf seconds \n", toc());
-      histogram_float(S, finalBC[0], "bc", b+1);
+      histogram_float(S, finalBC[0], betc_base, b+1);
     }
   }
 
@@ -255,6 +263,7 @@ int main(int argc, char *argv[]) {
 
 void
 parse_config(int argc, char ** argv, config_t * config) {
+  config->path = NULL;
   config->initial_size = 1000;
   config->batch_size = 1000;
   config->max_batches = 1000;
@@ -262,6 +271,97 @@ parse_config(int argc, char ** argv, config_t * config) {
   for(uint64_t i = 1; i < argc; i+=2) {
     char * str = argv[i];
     int len = strlen(argv[i]);
+
+    /* GENERATED WITH stringset.c */
+    if(!strncmp(str, "-", 1)) {
+      str += 1; len -= 1;
+      if(len) switch(*str) {
+	case '-':
+	  {
+	    str++; len--;
+	    if(len) switch(*str) {
+	      case 'b':
+		{
+		  str++; len--;
+		  if(!strncmp(str, "atchsize", len)) {
+		    str += 8; len -= 8;
+		    if(len == 0) {
+		      /* --batchsize */
+		      config->batch_size = atol(argv[i+1]);
+		    }
+		  }
+		} break;
+	      case 'i':
+		{
+		  str++; len--;
+		  if(!strncmp(str, "nitialsize", len)) {
+		    str += 10; len -= 10;
+		    if(len == 0) {
+		      /* --initialsize */
+		      config->initial_size = atol(argv[i+1]);
+		    }
+		  }
+		} break;
+	      case 'n':
+		{
+		  str++; len--;
+		  if(!strncmp(str, "umbatches", len)) {
+		    str += 9; len -= 9;
+		    if(len == 0) {
+		      /* --numbatches */
+		      config->max_batches = atol(argv[i+1]);
+		    }
+		  }
+		} break;
+	      case 'p':
+		{
+		  str++; len--;
+		  if(!strncmp(str, "ath", len)) {
+		    str += 3; len -= 3;
+		    if(len == 0) {
+		      /* --path */
+		      config->path = argv[i+1];
+		    }
+		  }
+		} break;
+	    }
+	  } break;
+	case 'b':
+	  {
+	    str++; len--;
+	    if(len == 0) {
+	      /* -b */
+	      config->batch_size = atol(argv[i+1]);
+	    }
+	  } break;
+	case 'i':
+	  {
+	    str++; len--;
+	    if(len == 0) {
+	      /* -i */
+	      config->initial_size = atol(argv[i+1]);
+	    }
+	  } break;
+	case 'n':
+	  {
+	    str++; len--;
+	    if(len == 0) {
+	      /* -n */
+	      config->max_batches = atol(argv[i+1]);
+	    }
+	  } break;
+	case 'p':
+	  {
+	    str++; len--;
+	    if(len == 0) {
+	      /* -p */
+	      config->path = argv[i+1];
+	    }
+	  } break;
+      }
+    }
+
+
     if(!strncmp(str, "-", 1)) {
       str += 1; len -= 1;
       if(len) switch(*str) {
@@ -374,7 +474,7 @@ histogram_float(struct stinger * S, float * scores, char * name, int64_t iterati
   }
 
   uint64_t * histogram = xcalloc(sizeof(uint64_t), (max+2));
-  
+
   if(histogram) {
     for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
       histogram[(int64_t)(scores[v])]++;
@@ -396,9 +496,9 @@ histogram_float(struct stinger * S, float * scores, char * name, int64_t iterati
 }
 
 void REDUCTION(float_t** finalResultArray,float_t** parallelArray,int32_t threadCount) {
-   #pragma parallel for
-    for(int v=0;v<STINGER_MAX_LVERTICES;v++) {
-        for(int t=0;t<threadCount;t++)
-            finalResultArray[0][v]+=parallelArray[t][v];
-    }
+#pragma parallel for
+  for(int v=0;v<STINGER_MAX_LVERTICES;v++) {
+    for(int t=0;t<threadCount;t++)
+      finalResultArray[0][v]+=parallelArray[t][v];
+  }
 }
