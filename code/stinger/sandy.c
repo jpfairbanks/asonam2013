@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
   static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
   printf("\tDone... %lf seconds \n", toc());
   histogram(S, matches, "communities", 0);
+  free(matches);
 
   printf("Components...\n");
   tic();
@@ -188,6 +189,7 @@ int main(int argc, char *argv[]) {
 
   /* start batching */
   for(uint64_t b = 0; b < config.max_batches && !feof(stdin); b++) {
+    printf("*** STARTING BATCH %ld ***\n", b+1);
     {
       for(uint64_t e = 0; e < config.batch_size && !feof(stdin); e++) {
 	readCSVLineDynamic(',', stdin, &buf, &bufSize, &fields, &lengths, &fieldsSize, &count);
@@ -207,12 +209,17 @@ int main(int argc, char *argv[]) {
     }
 
     /* do algorithms */
-    S_cluster = stinger_shared_private(&S_cluster_shared, name);
+    S_cluster = stinger_new();
     printf("Clustering...\n");
     tic();
+    STINGER_PARALLEL_FORALL_EDGES_BEGIN(S, ETYPE_MENTION) {
+      stinger_insert_edge(S_cluster, STINGER_EDGE_TYPE, STINGER_EDGE_SOURCE, STINGER_EDGE_DEST, STINGER_EDGE_WEIGHT, STINGER_EDGE_TIME_RECENT);
+    } STINGER_PARALLEL_FORALL_EDGES_END();
     static_multi_contract_clustering(&matches, STINGER_MAX_LVERTICES, S_cluster, S);
     printf("\tDone... %lf seconds \n", toc());
     histogram(S, matches, "communities", b+1);
+    free(matches);
+    stinger_free_all(S_cluster);
 
     printf("Components...\n");
     tic();
@@ -372,7 +379,6 @@ histogram_float(struct stinger * S, float * scores, char * name, int64_t iterati
     for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
       histogram[(int64_t)(scores[v])]++;
     }
-    printf("Here we are\n");
 
     char filename[1024];
     sprintf(filename, "%s.%ld.csv", name, iteration);

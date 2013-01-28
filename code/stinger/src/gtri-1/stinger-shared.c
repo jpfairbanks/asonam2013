@@ -305,6 +305,15 @@ stinger_shared_private (struct  stinger_shared ** shared, char * name) {
   return G;
 }
 
+void
+stinger_shared_private_unlink (struct stinger * S, struct  stinger_shared * shared, char * name) {
+  shmunmap (shared->LVA, S->LVA, STINGER_MAX_LVERTICES * sizeof(S->LVA[0]));
+  shmunmap (shared->ETA, S->ETA, STINGER_NUMETYPES * sizeof(struct stinger_etype_array));
+  shmunmap (shared->ebpool, S->ebpool, sizeof(struct stinger_ebpool));
+  shmunmap (shared->physMapBuffer, S->physMapBuffer, STINGER_MAX_LVERTICES * 128 * sizeof(char));
+  free(S);
+}
+
 /** @brief Unmap and unlink a shared STINGER from stinger_shared_new.
  * 
  * @param S The STINGER pointer.

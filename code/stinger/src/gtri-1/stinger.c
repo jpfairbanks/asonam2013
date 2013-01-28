@@ -562,14 +562,11 @@ struct stinger *stinger_new (void)
 struct stinger *
 stinger_free (struct stinger *S)
 {
-  size_t i;
-  if (!S)
-    return S;
-
   free (S->ETA);
   free (S->LVA);
-  free (S);
   free (S->ebpool);
+  free (S->physMapBuffer);
+  free (S);
   return NULL;
 }
 

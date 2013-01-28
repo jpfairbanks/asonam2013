@@ -20,6 +20,9 @@ stinger_shared_map (struct  stinger_shared ** shared, char * name);
 struct stinger *
 stinger_shared_private (struct  stinger_shared ** shared, char * name);
 
+void
+stinger_shared_private_unlink (struct stinger * S, struct  stinger_shared * shared, char * name);
+
 struct stinger *
 stinger_shared_free (struct stinger *S, struct stinger_shared * shared, char * name);
 

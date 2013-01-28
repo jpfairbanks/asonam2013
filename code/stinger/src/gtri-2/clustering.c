@@ -527,6 +527,8 @@ static_multi_contract_clustering (
     }
   }
 
+  free(scores);
+
   printf("\tclusters %ld\n", count);
   printf("\tclusters_edges %ld\n", edges);
   printf("\tclustering_iterations %ld\n", iteration);
