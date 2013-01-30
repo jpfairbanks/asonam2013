@@ -72,19 +72,6 @@ Building Graph...
 Graph(s) created. Running stats...
         Vertices: 662575
         Edges: 2189965
-        EBlocks[ETYPE_EMAIL_ALIAS]: 0
-        EBlocks[ETYPE_EMAIL_FROM]: 725575
-        EBlocks[ETYPE_EMAIL_TO]: 0
-        EBlocks[ETYPE_ACCESSED]: 0
-        EBlocks[ETYPE_LOGON]: 0
-        EBlocks[ETYPE_LOGOFF]: 0
-        EBlocks[ETYPE_PRINT]: 0
-        EBlocks[ETYPE_IM_FROM]: 0
-        EBlocks[ETYPE_IM_TO]: 0
-        EBlocks[ETYPE_IM_ALIAS]: 0
-        EBlocks[ETYPE_CLIPBOARD]: 0
-        EBlocks[ETYPE_REGISTRY]: 0
-        Consistency 0
         Done. 0.082313 seconds
 Beginning clustering...
         cluster_time 1.017081 seconds
