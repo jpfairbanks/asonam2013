@@ -11,3 +11,15 @@ stinger_vtx_to_physID(struct stinger * S, uint64_t vertexID, char ** outbuffer, 
 
 int
 stinger_vtx_to_physID_direct(struct stinger * S, uint64_t vertexID, char ** out_ptr, uint64_t * out_len);
+
+void
+stinger_save_physmap_to(struct stinger * S, char * name);
+
+void
+stinger_load_physmap_from(struct stinger * S, char * name);
+
+void
+stinger_save_physmap_to_file(struct stinger * S, FILE *);
+
+void
+stinger_load_physmap_from_file(struct stinger * S, FILE * fp);

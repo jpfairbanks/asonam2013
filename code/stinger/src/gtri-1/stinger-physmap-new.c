@@ -1,6 +1,7 @@
 #include "stinger.h"
 #include "x86-full-empty.h"
 #include "xmalloc.h"
+#include "stinger-physmap-new.h"
 
 #include <string.h>
 
@@ -166,4 +167,63 @@ stinger_vtx_to_physID_direct(struct stinger * S, uint64_t vertexID, char ** out_
 
     *out_len = 0;
     return -1;
+}
+
+void
+stinger_save_physmap_to(struct stinger * S, char * name) {
+  FILE * fp = fopen(name, "w");
+  if(fp) {
+    stinger_save_physmap_to_file(S,fp);
+    fclose(fp);
+  } else {
+    fprintf(stderr, "%s %d: ERROR opening file %s\n", __func__, __LINE__, name);
+  }
+}
+
+void
+stinger_load_physmap_from(struct stinger * S, char * name) {
+  FILE * fp = fopen(name, "r");
+  if(fp) {
+    stinger_load_physmap_from_file(S,fp);
+    fclose(fp);
+  } else {
+    fprintf(stderr, "%s %d: ERROR opening file %s\n", __func__, __LINE__, name);
+  }
+}
+
+void
+stinger_save_physmap_to_file(struct stinger * S, FILE * fp) {
+  uint64_t nv = STINGER_MAX_LVERTICES;
+  fwrite(&nv, sizeof(uint64_t), 1, fp);
+
+  for(uint64_t v = 0; v < STINGER_MAX_LVERTICES; v++) {
+    if(S->LVA[v].physIDlength) {
+      fwrite(&v, sizeof(uint64_t), 1, fp);
+      fwrite(&(S->LVA[v].physIDlength), sizeof(uint64_t), 1, fp);
+      fwrite(S->physMapBuffer + S->LVA[v].physID, sizeof(char), S->LVA[v].physIDlength, fp);
+    }
+  }
+
+  uint64_t stop = UINT64_MAX;
+  fwrite(&stop, sizeof(uint64_t), 1, fp);
+}
+
+void
+stinger_load_physmap_from_file(struct stinger * S, FILE * fp) {
+  uint64_t nv = STINGER_MAX_LVERTICES;
+  fread(&nv, sizeof(uint64_t), 1, fp);
+  if(nv != STINGER_MAX_LVERTICES) {
+    fprintf(stderr, "%s %d: ERROR STINGER_MAX_LVERTICES in file is %ld.  Please change to match.\n", __func__, __LINE__, nv);
+    return;
+  }
+
+  uint64_t v = 0;
+  fread(&v, sizeof(uint64_t), 1, fp);
+  while(v != UINT64_MAX) {
+    S->LVA[v].physID = S->physMapTop;
+    fread(&(S->LVA[v].physIDlength), sizeof(uint64_t), 1, fp);
+    fread(&(S->physMapBuffer[S->physMapTop]), sizeof(char), S->LVA[v].physIDlength, fp);
+    S->physMapTop += S->LVA[v].physIDlength;
+    fread(&v, sizeof(uint64_t), 1, fp);
+  }
 }
