@@ -1,4 +1,10 @@
-To view the README.md as a pdf use\n pandoc README.md -o read.pdf\n to generate the pdf.
+To view the writeup.md as a pdf you must have pandoc installed.
+
+> make pdf
+
+Will transform the markdown to latex and compile it to a pdf.
+
+> make view will open evince to view the pdf.
 
 Here are some details on the syntax for the document
 http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html
