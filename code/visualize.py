@@ -119,12 +119,22 @@ def plot_kernel(dframe, targets, kernel_name,
         plt.savefig(figure_path+kernel_name+str(time())+'.png')
     return percs
 
+def random_targets(dframe, nplots, nseries, **kwargs):
+    """ Make nplots figures that each display nseries samples from the data
+        in dframe
+    """
+    targetcollection  = [np.random.permutation(dframe.index)[:nseries]
+                         for i in range(nplots)]
+    data = [plot_kernel(dframe, t, KERNEL_NAME, FIGUREPATH, kwargs)
+            for t in targetcollection]
+    return data
+
 DATA_DIR = u'/shared/users/jfairbanks/sandyfull/'
 FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
 NSAMPLES = 1000
 STRIDE = 10
 NTARGETS = 8
-targetsv = [328,457,5056,340807,12859,12860]
+TARGETSV = [328,457,5056,340807,12859,12860]
 KERNEL_NAME = "bc"
 KERNEL_NAMES = ['bc', 'communities', 'components']
 #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
@@ -137,16 +147,12 @@ print(num_nans)
 #replace nans  with 0 to fix sorting order
 rf = df.rank(ascending=False)
 print (rf)
-signal = rf.ix[targetsv]
+signal = rf.ix[TARGETSV]
 #print(signal)
 #signal.T.apply(normalize).plot()
 
 #show that the path to the end is jagged and jumpy
-for i in range(6):
-    # TODO: make this  happen  on subplots to save space
-    targetsv = np.random.permutation(rf.index)[:NTARGETS]
-    plot_kernel(rf, targetsv, KERNEL_NAME, FIGUREPATH)
-
+randframes = random_targets(rf, 6, 8)
 # TODO: quantiles
 
 #demonstrate that the leaders  at the  beginning are the leaders at the end.
