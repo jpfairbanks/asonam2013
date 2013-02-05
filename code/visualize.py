@@ -94,10 +94,24 @@ def percentiles(sequence, queries):
     sequence = np.sort(sequence)
     return [stats.percentileofscore(sequence, sequence[d]) for d in queries]
 
-def plot_kernel(dframe, targets, kernel_name, figure_path, save=False):
+def plot_kernel(dframe, targets, kernel_name,
+                figure_path, save=False, **kwargs):
+    """ Makes a plot  of the kernel values for the targets over time
+
+    Arguments:
+    - `dframe`: the  DataFrame of kernel values at time steps in the columns and vertices as rows
+    - `targets`: the set of vertices to display
+    - `kernel_name`: the text that will be used in the title and filename
+    - `figure_path`: where to save the figure ending in a slash
+    - `save`: boolean indicating whether to save or not default to False
+    - `**kwargs`: matplotlib keyword args passed to plot
+
+    Returns:
+    - `percs`: the kernel values restricted to the targets transposed for plotting
+    """
     # TODO: normalize
     percs =  dframe.ix[targets].T
-    ax = percs.plot()
+    ax = percs.plot(kwargs)
     ax.set_title(kernel_name+" @mentions by vertex")
     ax.set_xlabel("batch number")
     ax.set_ylabel("percentile of "+kernel_name)
