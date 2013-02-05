@@ -94,36 +94,55 @@ def percentiles(sequence, queries):
     sequence = np.sort(sequence)
     return [stats.percentileofscore(sequence, sequence[d]) for d in queries]
 
-def plot_kernel(dframe, targets, kernel_name, figure_path):
-    func = lambda S: percentiles(S, targets)
-    percs = pd.DataFrame([func(dframe[c]) for c in dframe.columns], columns=targets)
+def plot_kernel(dframe, targets, kernel_name, figure_path, save=False):
+    # TODO: normalize
+    percs =  dframe.ix[targets].T
     ax = percs.plot()
     ax.set_title(kernel_name+" @mentions by vertex")
     ax.set_xlabel("batch number")
     ax.set_ylabel("percentile of "+kernel_name)
-    plt.savefig(figure_path+kernel_name+str(time())+'.png')
+    if save:
+        plt.savefig(figure_path+kernel_name+str(time())+'.png')
     return percs
 
 DATA_DIR = u'/shared/users/jfairbanks/sandyfull/'
 FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
 NSAMPLES = 1000
-NTARGETS = 10
+STRIDE = 10
+NTARGETS = 8
 targetsv = [328,457,5056,340807,12859,12860]
 KERNEL_NAME = "bc"
 KERNEL_NAMES = ['bc', 'communities', 'components']
 #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
-df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.vec", range(1,NSAMPLES,10))
-print (df)
-signal = df.ix[targetsv]
+df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.vec", range(1,NSAMPLES,STRIDE))
+#count how many entries are not defined,
+#vertices who have not  appeared yet or have fallen below epsilon
+num_nans = df.apply(np.isnan).sum()
+print(num_nans)
+
+#replace nans  with 0 to fix sorting order
+rf = df.rank(ascending=False)
+print (rf)
+signal = rf.ix[targetsv]
 #print(signal)
 #signal.T.apply(normalize).plot()
-#for i in range(10):
-#    targetsv = np.random.permutation(df.index)[:NTARGETS]
-#    plot_kernel(df, targetsv, KERNEL_NAME, FIGUREPATH)
-targets_top_end = df.sort(columns=[df.columns[-1]], ascending=False)[:10].index
-print(targets_top_end)
-#not sure that this is working
-topp = plot_kernel(df, list(targets_top_end), KERNEL_NAME, FIGUREPATH)
-topp.plot()
+
+#show that the path to the end is jagged and jumpy
+for i in range(6):
+    # TODO: make this  happen  on subplots to save space
+    targetsv = np.random.permutation(rf.index)[:NTARGETS]
+    plot_kernel(rf, targetsv, KERNEL_NAME, FIGUREPATH)
+
+# TODO: quantiles
+
+#demonstrate that the leaders  at the  beginning are the leaders at the end.
+#the rich get richer
+# targets_top_end = rf.sort(columns=[rf.columns[-1]], ascending=False)[:10].index
+# targets_top_start = rf.sort(columns=[rf.columns[5]], ascending=False)[:10].index
+# print(targets_top_end)
+# toppe = plot_kernel(rf, list(targets_top_end), KERNEL_NAME, FIGUREPATH)
+# topps = plot_kernel(rf, list(targets_top_start), KERNEL_NAME, FIGUREPATH)
+
+# TODO: sample from the set of vertices that have ever been above median
 #rankf = df.rank().T.ix[targetsv]
 plt.show()
