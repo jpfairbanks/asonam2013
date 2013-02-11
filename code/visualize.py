@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 from time import time as time
 import timedict as td
+import util
 
 def load_data_histogram(pathfmt, batch):
     """Gets a batch into a series to be used in a the analysis
@@ -97,6 +98,21 @@ def percentiles(sequence, queries):
     """
     sequence = np.sort(sequence)
     return [stats.percentileofscore(sequence, sequence[d]) for d in queries]
+
+def compare_kings_seq(seq, start_col=0, end_col=-1,
+                  ascending=False, plot=False, **kwargs):
+    #the rich stay richer
+    ser = pd.Series(seq)
+    targets_top_end = rf.sort(columns=[rf.columns[end_col]],
+                              ascending=ascending)
+    targets_top_start = rf.sort(columns=[rf.columns[start_col]],
+                                ascending=ascending)
+    similarity = lambda s: util.jaccard(targets_top_end[:s].index,
+                                        targets_top_start[:s].index)
+    ser = ser.apply(similarity)
+    if plot:
+        ser.plot()
+    return ser
 
 def plot_kernel(dframe, targets, kernel_name,
                 figure_path, save=False, **kwargs):
@@ -196,14 +212,13 @@ tf = df.ix[TARGETSV]
 #qf.plot(logy=True)
 timer.toc('quants')
 # TODO: demonstrate that the leaders  at the  beginning are the leaders at the end.
-#the rich get richer
-# targets_top_end = rf.sort(columns=[rf.columns[-1]], ascending=False)[:10].index
-# targets_top_start = rf.sort(columns=[rf.columns[5]], ascending=False)[:10].index
-# print(targets_top_end)
-# toppe = plot_kernel(rf, list(targets_top_end), KERNEL_NAME, FIGUREPATH)
-# topps = plot_kernel(rf, list(targets_top_start), KERNEL_NAME, FIGUREPATH)
+compare_kings_seq([10,30,300], start_col=5)
+#the similarity of the top at beginning and end is large and then falls very quickly
 # TODO: what happens to the people who start at the bottom.
+compare_kings_seq([100,300,3000], start_col=5, ascending=True)
 smallfish = df[df[21] <.1][21].index
+# TODO: count the number of times a vertex appears in top n
+# TODO: can we find anyone making a smooth climb to the top
 # TODO: sample from the set of vertices that have ever been above a high quantile
 q=.500
 qmedians = df.quantile(q)
