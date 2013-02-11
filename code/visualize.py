@@ -15,8 +15,8 @@ def load_data_histogram(pathfmt, batch):
     - `pathfmt`:
     - `batch`:
     """
-    path = pathfmt.format(batch)
-    dframe = pd.read_csv(path, columns=frozenset('bin','count'))
+    path = pathfmt % (batch)
+    dframe = pd.read_csv(path, names=frozenset(['bin','count']))
     return dframe
 
 def load_sparse_vec(pathfmt, batch):
