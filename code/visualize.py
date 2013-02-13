@@ -21,27 +21,30 @@ def load_data_histogram(pathfmt, batch):
     dframe = pd.read_csv(path, names=frozenset(['bin','count']))
     return dframe
 
-def load_sparse_vec(pathfmt, batch):
+def load_sparse_vec(pathfmt, batch, column=-1):
     """reads in a sparse vector that is represented as key value pairs.
 
     Arguments:
     - `pathfmt`:
     - `batch`:
+    - `column`: which column to use if data is a table
     - `names`:
     - `'val']`:
     """
     path = pathfmt % (batch)
-    dframe = pd.read_csv(path, index_col=0, names=[batch])
+    dframe = pd.read_csv(path, index_col=0, header=None)
+    dframe = pd.DataFrame(dframe[dframe.columns[column]],columns=[batch])
     return dframe
 
-def load_batches(pathfmt, batches):
+def load_batches(pathfmt, batches, column=-1):
     """Load a set of batches into a big data frame
 
     Arguments:
     - `pathfmt`:
     - `batches`:
+    - `column`: which column to use if data is a table
     """
-    series = [load_sparse_vec(pathfmt, b) for b in batches]
+    series = [load_sparse_vec(pathfmt, b, column) for b in batches]
     frame = pd.DataFrame.join(series[0], series[1:], how='outer')
     frame.save
     return frame
@@ -322,27 +325,29 @@ def derivative_analysis(lf, vertices, timer=None):
     #TODO: how many jumps does each vertex have
     return peakslocs
 
-DATA_DIR = u'/shared/users/jfairbanks/sandyfull/'
+DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
 FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
-NSAMPLES = 1000 #number of batches
+NSAMPLES = 300 #number of batches
 STRIDE = 10 #resolution of time in batches
 NTARGETS = 8 #number of series for the plots
 BINCOUNT = 50 #how many bins for histograms
 TARGETSV = []
 TARGETSV = [3784858, 2357671, 2975930, 359724, 2124973, 3732925,] #vertices that I picked by hand
-KERNEL_NAME = "bc"
+KERNEL_NAME = "betweenness_centrality"
 KERNEL_NAMES = ['bc', 'communities', 'components']
 timer = td.timedict()
 
 #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
 
 timer.tic('loading data')
-df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.vec", range(1, NSAMPLES, STRIDE))
+df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
 timer.toc('loading data')
 #run_bc_analysis(df, timer)
 peakslocs = derivative_analysis(df.apply(np.log), None, timer)
 peakloc_counts = peakslocs.value_counts()
 peakpeaks = peakslocs.value_counts()[:3]
-cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
-cf[[421,431,441]].dropna(how='all')
+#cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
+#cf[[421,431,441]].dropna(how='all')
+trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
+
 plt.show()
