@@ -423,29 +423,40 @@ timer.tic('loading data')
 df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
 timer.toc('loading data')
 #run_bc_analysis(df, timer)
-peakslocs = derivative_analysis(df.apply(np.log), None, timer)
-peakloc_counts = peakslocs.value_counts()
-peakpeaks = peakslocs.value_counts()[:3]
+#peakslocs = derivative_analysis(df.apply(np.log), None, timer)
+#peakloc_counts = peakslocs.value_counts()
+#peakpeaks = peakslocs.value_counts()[:3]
+##cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
+##cf[[421,431,441]].dropna(how='all')
+##trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
 #cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
 #cf[[421,431,441]].dropna(how='all')
-#trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
-cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
-cf[[421,431,441]].dropna(how='all')
-plt.show()
-selected_axes = [501,511,901]
-topn = pd.Index([10,50,100,500,1000,5000,10000])
-rplf = df[selected_axes].replace(np.nan, 0)
-out = exec_correlation_analysis(rplf, selected_axes,
-                          seq=topn, plot=True,
-                          corrmethod='kendall',)
-print(out)
-timestamps = [591,601]
-eps=.05
-ct = exec_crosstabs(df, timestamps, eps)
-pairs = [[t, t+10] for t in df.columns[0:-1:10]]
-cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
-
+#plt.show()
+#selected_axes = [501,511,901]
+#topn = pd.Index([10,50,100,500,1000,5000,10000])
+#rplf = df[selected_axes].replace(np.nan, 0)
+#out = exec_correlation_analysis(rplf, selected_axes,
+#                          seq=topn, plot=True,
+#                          corrmethod='kendall',)
+#print(out)
+#timestamps = [591,601]
+#eps=.05
+#ct = exec_crosstabs(df, timestamps, eps)
+#pairs = [[t, t+10] for t in df.columns[0:-1:10]]
+#cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
+#
 #estimate the lognormality
-l1pf = np.log1p(df[501].dropna())
-fit = stats.anderson(l1pf)
-l1pf.hist(bins=BINCOUNT)
+#l1pf = np.log1p(df[291].dropna())
+#fit = stats.anderson(l1pf)
+#l1pf.hist(bins=BINCOUNT, normed=True)
+#finding a distribution for the right half of the kernel value distribution
+t = 291
+lf = np.log(df)
+seq = lf[t]
+seq = seq[seq>0]
+z = 0.0
+filt = seq[seq>(seq.mean()+z*seq.std())]
+filt.hist(bins=BINCOUNT,normed=True)
+expfit = stats.expon.fit(filt)
+print(expfit)
+plt.show()
