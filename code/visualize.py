@@ -434,3 +434,13 @@ out = exec_correlation_analysis(rplf, selected_axes,
                           seq=topn, plot=True,
                           corrmethod='kendall',)
 print(out)
+timestamps = [591,601]
+eps=.05
+ct = exec_crosstabs(df, timestamps, eps)
+pairs = [[t, t+10] for t in df.columns[0:-1:10]]
+cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
+
+#estimate the lognormality
+l1pf = np.log1p(df[501].dropna())
+fit = stats.anderson(l1pf)
+l1pf.hist(bins=BINCOUNT)
