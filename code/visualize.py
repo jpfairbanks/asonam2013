@@ -325,8 +325,57 @@ def derivative_analysis(lf, vertices, timer=None):
     #TODO: how many jumps does each vertex have
     return peakslocs
 
-DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
+
+def correlation_analysis_from_top(sorted_frame, seq, corrmethod, ):
+    """ Always compare the vertices that are highest at the end to the vertices
+    that are highest at the current batch
+
+    Arguments:
+    - `sorted_frame`:
+    - `seq`: the number of vertices to include in 'top'
+    - `corrmethod`: ['spearman', 'pearson', 'kendall']
+    """
+    fun = lambda i: sorted_frame[:i].corr(method=corrmethod)
+    return seq.map(fun)
+
+def scatter_matrix_topp(sorted_frame, selected_axes, percentile):
+    """
+
+    Arguments:
+    - `sorted_frame`:
+    - `selected_axes`: the axes to include in .the scatterplot matrix
+    - `percentile`:
+    """
+    pd.scatter_matrix(
+        np.log(sorted_frame[selected_axes]+1)[:(percentile*len(sorted_frame)/100)]
+        )
+
+def exec_correlation_analysis(frame, selected_axes,  seq=None,
+                              corrmethod=None,plot=False, **kwargs):
+    """
+
+    Arguments:
+    - `frame`:
+    - `seq`:
+    - `plot`:
+    - `corrmethod`:
+    - `**kwargs`:
+    """
+    methods = ['spearman', 'pearson', 'kendall']
+    if not (corrmethod in methods):
+        corrmethod = methods[0]
+    if seq==None:
+        seq = pd.Index(range(10,2000,100))
+    sorted_frame = frame.sort(columns=frame.columns[-1], ascending=False).dropna()
+    print(sorted_frame)
+    cseq = correlation_analysis_from_top(sorted_frame,
+                                         seq, corrmethod)
+    if plot:
+        scatter_matrix_topp(sorted_frame, selected_axes, 10)
+    return (cseq)
+
 FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
+DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
 NSAMPLES = 300 #number of batches
 STRIDE = 10 #resolution of time in batches
 NTARGETS = 8 #number of series for the plots
@@ -348,6 +397,14 @@ peakloc_counts = peakslocs.value_counts()
 peakpeaks = peakslocs.value_counts()[:3]
 #cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
 #cf[[421,431,441]].dropna(how='all')
-trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
-
+#trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
+cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
+cf[[421,431,441]].dropna(how='all')
 plt.show()
+selected_axes = [501,511,901]
+topn = pd.Index([10,50,100,500,1000,5000,10000])
+rplf = df[selected_axes].replace(np.nan, 0)
+out = exec_correlation_analysis(rplf, selected_axes,
+                          seq=topn, plot=True,
+                          corrmethod='kendall',)
+print(out)
