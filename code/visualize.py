@@ -371,6 +371,37 @@ def exec_correlation_analysis(frame, selected_axes,  seq=None,
         scatter_matrix_topp(sorted_frame, selected_axes, 10)
     return (cseq)
 
+def crosstabs(value_series, rank_series, epsilon):
+    """
+
+    Arguments:
+    - `value_series`:
+    - `rank_series`:
+    - `epsilon`: the threshold for significance
+    """
+    mask = value_series.abs() > epsilon
+    sigvals = mask*value_series
+    ct = pd.crosstab(np.sign(sigvals), np.sign(rank_series))
+    return ct
+
+def exec_crosstabs(df,timestamps,epsilon):
+    """
+
+    Arguments:
+    - `df`:
+    - `timestamps`:
+    - `epsilon`:
+    """
+    frame = df[timestamps]
+    last_col = timestamps[-1]
+    vals = np.log(frame+1).T.diff().T[last_col]
+    ranks = frame.rank(method='min',
+                       na_option='top').T.diff().T[last_col]
+    ranks.name = 'delta_rank'
+    vals.name = 'delta_val'
+    ct = crosstabs(vals, ranks, eps)
+    return ct
+
 DATA_DIR = u'/shared/users/jfairbanks/sandyfull/'
 FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
 NSAMPLES = 1000 #number of batches
