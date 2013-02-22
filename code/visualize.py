@@ -338,7 +338,7 @@ def correlation_analysis_from_top(sorted_frame, seq, corrmethod, ):
     fun = lambda i: sorted_frame[:i].corr(method=corrmethod)
     return seq.map(fun)
 
-def scatter_matrix_topp(sorted_frame, selected_axes, percentile):
+def scatter_matrix_topp(sorted_frame, selected_axes, percentile=1):
     """
 
     Arguments:
