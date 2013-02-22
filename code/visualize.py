@@ -9,45 +9,7 @@ import scipy.stats as stats
 from time import time as time
 import timedict as td
 import util
-
-def load_data_histogram(pathfmt, batch):
-    """Gets a batch into a series to be used in a the analysis
-
-    Arguments:
-    - `pathfmt`:
-    - `batch`:
-    """
-    path = pathfmt % (batch)
-    dframe = pd.read_csv(path, names=frozenset(['bin','count']))
-    return dframe
-
-def load_sparse_vec(pathfmt, batch, column=-1):
-    """reads in a sparse vector that is represented as key value pairs.
-
-    Arguments:
-    - `pathfmt`:
-    - `batch`:
-    - `column`: which column to use if data is a table
-    - `names`:
-    - `'val']`:
-    """
-    path = pathfmt % (batch)
-    dframe = pd.read_csv(path, index_col=0, header=None)
-    dframe = pd.DataFrame(dframe[dframe.columns[column]],columns=[batch])
-    return dframe
-
-def load_batches(pathfmt, batches, column=-1):
-    """Load a set of batches into a big data frame
-
-    Arguments:
-    - `pathfmt`:
-    - `batches`:
-    - `column`: which column to use if data is a table
-    """
-    series = [load_sparse_vec(pathfmt, b, column) for b in batches]
-    frame = pd.DataFrame.join(series[0], series[1:], how='outer')
-    frame.save
-    return frame
+from kernelio import *
 
 def lognormal_estimates_histogram(dframe):
     """Calculates the log-mean and log-standard deviation assuming that the data
@@ -87,18 +49,6 @@ def run_lognormal_analysis(directory, nsamples, kernel_name):
     plt.legend()
     plt.show()
 
-def normalize(seq, prob=False):
-    ''' Takes a sequence and normalizes it
-
-    Arguments:
-    - seq
-    - prob: if true then it will normalize to sum to 1
-    '''
-    if prob:
-        return seq/np.sum(seq)
-    else:
-        m = np.max(seq)
-        return seq/m
 
 def compare_kings_seq(rf, seq, start_col=0, end_col=-1,
                   ascending=False, plot=False, **kwargs):
