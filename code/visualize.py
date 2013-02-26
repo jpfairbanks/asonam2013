@@ -395,10 +395,12 @@ def main(df, timer=None):
 
 if __name__ == '__main__':
     FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
-    DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
+    DATA_DIR = u'../data/kernels/' #symlink this for portability
     NSAMPLES = 1000 #number of batches
     STRIDE = 10 #resolution of time in batches
-    TIMEINDEX = pd.Index(range(1,NSAMPLES,STRIDE))
+    INIT_SAMPLE = 1
+    END_SAMPLE = NSAMPLES #TODO subtract one from this
+    TIMEINDEX = pd.Index(range(INIT_SAMPLE,END_SAMPLE,STRIDE))
     NTARGETS = 8 #number of series for the plots
     BINCOUNT = 50 #how many bins for histograms
     TARGETSV = []
