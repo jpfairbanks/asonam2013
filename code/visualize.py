@@ -269,7 +269,6 @@ def derivative_analysis(lf, vertices, timer=None):
     # TODO: why do some batches have so many vertices with peaks there
     #david thinks these are connected component merges
     # TODO: measure slopes as a function distance from rank(e)
-    print(timer)
     # TODO: can we segment the lines into jumps and linear segments?
     # the difference between the slope of val and rank lines is the attrition rate
     #TODO: how many jumps does each vertex have
@@ -355,34 +354,26 @@ def exec_crosstabs(df,timestamps,epsilon):
     ct = crosstabs(vals, ranks, eps)
     return ct
 
-if __name__ == '__main__':
-    FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
-    DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
-    NSAMPLES = 300 #number of batches
-    STRIDE = 10 #resolution of time in batches
-    NTARGETS = 8 #number of series for the plots
-    BINCOUNT = 50 #how many bins for histograms
-    TARGETSV = []
-    TARGETSV = [3784858, 2357671, 2975930, 359724, 2124973, 3732925,] #vertices that I picked by hand
-    KERNEL_NAME = "betweenness_centrality"
-    KERNEL_NAMES = ['bc', 'communities', 'components']
-    timer = td.timedict()
+def load_mean(count):
+    df = load_batches('/home/users/jfairbanks/Projects/morerad/'+ KERNEL_NAME+".%d.csv",
+                      range(1,count), column=-1)
+    return df, df.mean()
 
-    #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
+def main(df, timer=None):
+    """
 
-    timer.tic('loading data')
-    df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
-    timer.toc('loading data')
+    Arguments:
+    - `df`:
+    - `timer`:
+    """
+    lf = np.log(df)
     #run_bc_analysis(df, timer)
     #peakslocs = derivative_analysis(df.apply(np.log), None, timer)
     #peakloc_counts = peakslocs.value_counts()
     #peakpeaks = peakslocs.value_counts()[:3]
-    ##cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
-    ##cf[[421,431,441]].dropna(how='all')
-    ##trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", range(1, NSAMPLES, STRIDE), column=-1)
-    #cf = load_batches(DATA_DIR+'components.%d.csv', range(1,999,10))
+    #cf = load_batches(DATA_DIR+'components.%d.csv', TIMEINDEX,)
     #cf[[421,431,441]].dropna(how='all')
-    #plt.show()
+    #trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", TIMEINDEX, column=-1)
     #selected_axes = [501,511,901]
     #topn = pd.Index([10,50,100,500,1000,5000,10000])
     #rplf = df[selected_axes].replace(np.nan, 0)
@@ -401,13 +392,55 @@ if __name__ == '__main__':
     #fit = stats.anderson(l1pf)
     #l1pf.hist(bins=BINCOUNT, normed=True)
     #finding a distribution for the right half of the kernel value distribution
-    t = 291
+
+if __name__ == '__main__':
+    FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
+    DATA_DIR = u'/scratch/jfairbanks/sandy_better/'
+    NSAMPLES = 1000 #number of batches
+    STRIDE = 10 #resolution of time in batches
+    TIMEINDEX = pd.Index(range(1,NSAMPLES,STRIDE))
+    NTARGETS = 8 #number of series for the plots
+    BINCOUNT = 50 #how many bins for histograms
+    TARGETSV = []
+    #TARGETSV = [3784858, 2357671, 2975930, 359724, 2124973, 3732925,] #vertices that I picked by hand
+    KERNEL_NAME = "betweenness_centrality"
+    KERNEL_NAMES = ['bc', 'communities', 'components']
+    timer = td.timedict()
+
+    #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
+
+    timer.tic('loading data')
+    FILENAME = 'data.csv'
+    try:
+        df = pd.read_csv(FILENAME)
+        print('read file %s'% FILENAME)
+        df = df.set_index('0')
+        df.columns = df.columns.map(int)
+    except:
+        print('failed to read file %s'% FILENAME)
+        df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.csv",
+                          TIMEINDEX, column=-1)
+        df.to_csv(FILENAME)
+    timer.toc('loading data')
+    #main(df, timer)
+    t = 701
     lf = np.log(df)
     seq = lf[t]
     seq = seq[seq>0]
     z = 0.0
-    filt = seq[seq>(seq.mean()+z*seq.std())]
-    filt.hist(bins=BINCOUNT,normed=True)
-    expfit = stats.expon.fit(filt)
+    filt = lf[lf>(lf.mean()+z*lf.std())]
+    filt[t].hist(bins=BINCOUNT,normed=True)
+    expfit = stats.expon.fit(filt[t])
     print(expfit)
     plt.show()
+    lf.mean().plot()
+    filt.mean().plot()
+    dist_changes = filt.diff()
+    sigma = dist_changes.std()
+    filt.mean() + sigma*2
+    compframe = pd.DataFrame(
+        {
+            'median': lf[lf>lf.median()][t],
+            'mean'  : lf[lf>lf.mean()][t]
+        })
+    compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
