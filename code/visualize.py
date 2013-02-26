@@ -412,37 +412,54 @@ if __name__ == '__main__':
     #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
 
     timer.tic('loading data')
-    FILENAME = 'data.csv'
+    # figure out where data should be found
+    FILENAME = 'kernelframe.%s.%d.%d.%d.csv' %(KERNEL_NAME,
+		    INIT_SAMPLE, END_SAMPLE, STRIDE)
+    store_name, frame_name = format_hdf_names(DATA_DIR,
+                                              KERNEL_NAME,
+                                              INIT_SAMPLE, END_SAMPLE, STRIDE)
+    #get the data no matter what it takes, save it to hdf5 for future speed
     try:
-        df = pd.read_csv(FILENAME)
-        print('read file %s'% FILENAME)
-        df = df.set_index('0')
-        df.columns = df.columns.map(int)
-    except:
-        print('failed to read file %s'% FILENAME)
-        df = load_batches(DATA_DIR+ KERNEL_NAME+".%d.csv",
-                          TIMEINDEX, column=-1)
-        df.to_csv(FILENAME)
+        df = load_hdf_table(store_name, frame_name)
+    except KeyError as e:
+        print(e)
+        print('we could not find the data in an hdfstore.')
+        df = load_csv_frame(DATA_DIR, KERNEL_NAME, FILENAME, TIMEINDEX)
+        try:
+            write_hdf_table(store_name, frame_name, df)
+        except Exception as ex:
+            print(ex)
+            print('we failed to write to hdf, is the hdf library installed?')
+    print('data loaded')
     timer.toc('loading data')
     #main(df, timer)
     t = 701
     lf = np.log(df)
-    seq = lf[t]
-    seq = seq[seq>0]
-    z = 0.0
-    filt = lf[lf>(lf.mean()+z*lf.std())]
-    filt[t].hist(bins=BINCOUNT,normed=True)
-    expfit = stats.expon.fit(filt[t])
-    print(expfit)
-    plt.show()
-    lf.mean().plot()
-    filt.mean().plot()
-    dist_changes = filt.diff()
-    sigma = dist_changes.std()
-    filt.mean() + sigma*2
+    #show that we should use the median instead of the mean
+    print('comparing')
     compframe = pd.DataFrame(
         {
             'median': lf[lf>lf.median()][t],
             'mean'  : lf[lf>lf.mean()][t]
         })
-    compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
+    #compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
+    #TODO: make this quantitative
+    print('filtering')
+    filt = lf[lf>(lf.median())]
+    #filt[t].hist(bins=BINCOUNT,normed=True)
+    #show how the mean of the distribution changes over time
+    exponfit = lambda seq:stats.expon.fit(seq.dropna())
+    frame = pd.Series(filt.apply(exponfit))
+    #location
+    taillocs = pd.Series(frame.index.map(lambda i: frame[i][0]))
+    taillocs.plot()
+    #shape
+    #TODO: make a seperate plot or a multiple axes plot
+    tailshape = pd.Series(frame.index.map(lambda i: frame[i][1]))
+    tailshape.plot()
+    #for filtered and unfiltered data
+    print('plotting')
+    #lf.mean().plot()
+    #filt.mean().plot()
+    dist_changes = filt.diff()
+    sigma = dist_changes.std()
