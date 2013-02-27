@@ -409,8 +409,16 @@ if __name__ == '__main__':
     TIMEINDEX = pd.Index(range(INIT_SAMPLE,END_SAMPLE,STRIDE))
     NTARGETS = 8 #number of series for the plots
     BINCOUNT = 50 #how many bins for histograms
-    TARGETSV = []
-    #TARGETSV = [3784858, 2357671, 2975930, 359724, 2124973, 3732925,] #vertices that I picked by hand
+    #TARGETSV = []
+    TARGETSV = [688773,
+                756680,
+                984640,
+                1067645,
+                3030528,
+                3035516,
+                ]
+    #[3784858, 2357671, 2975930, 359724, 2124973, 3732925,]
+    #vertices that I picked by hand
     KERNEL_NAME = "betweenness_centrality"
     KERNEL_NAMES = ['bc', 'communities', 'components']
     timer = td.timedict()
