@@ -450,21 +450,30 @@ if __name__ == '__main__':
         })
     #compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
     #TODO: make this quantitative
+    #show density at fixed time t
+    show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
+    show_histogram_logbc(lf[t], t, median=True, fitter=stats.gamma)
+    frame = df
+    diffs = frame[t+STRIDE] - frame[t]
+    seq = np.log(diffs[(diffs)>0])
+    show_histogram_diffs(seq,t, fitter=stats.laplace)
+    seq_neg = np.log(diffs[(diffs)<0].abs())
+    show_histogram_diffs(seq_neg,t, fitter=stats.beta)
     print('filtering')
     filt = lf[lf>(lf.median())]
     #filt[t].hist(bins=BINCOUNT,normed=True)
     #show how the mean of the distribution changes over time
     exponfit = lambda seq:stats.expon.fit(seq.dropna())
-    frame = pd.Series(filt.apply(exponfit))
+    #frame = pd.Series(filt.apply(exponfit))
     #location
-    taillocs = pd.Series(frame.index.map(lambda i: frame[i][0]))
-    taillocs.plot()
+    #taillocs = pd.Series(frame.index.map(lambda i: frame[i][0]))
+    #taillocs.plot()
     #shape
     #TODO: make a seperate plot or a multiple axes plot
-    tailshape = pd.Series(frame.index.map(lambda i: frame[i][1]))
-    tailshape.plot()
+    #tailshape = pd.Series(frame.index.map(lambda i: frame[i][1]))
+    #tailshape.plot()
     #for filtered and unfiltered data
-    print('plotting')
+    #print('plotting')
     #lf.mean().plot()
     #filt.mean().plot()
     dist_changes = filt.diff()
