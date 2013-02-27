@@ -384,9 +384,9 @@ def main(df, timer=None):
     #                          seq=topn, plot=True,
     #                          corrmethod='kendall',)
     #print(out)
-    #timestamps = [591,601]
-    #eps=.05
-    #ct = exec_crosstabs(df, timestamps, eps)
+    timestamps = [591,601]
+    eps=.05
+    ct = exec_crosstabs(df, timestamps, eps)
     #pairs = [[t, t+10] for t in df.columns[0:-1:10]]
     #cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
     #
