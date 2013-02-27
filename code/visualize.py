@@ -200,7 +200,7 @@ def run_bc_analysis(df, timer):
     #count how many entries are not defined,
     #vertices who have not appeared yet or have fallen below epsilon
     num_nans = df.apply(np.isnan).sum()
-    print("The number of NANs by timestep:\n", num_nans)
+    #print("The number of NANs by timestep:\n", num_nans)
     #compute the ranks for each vertex at each timethod='minm, na_option='top'e step
     timer.tic('ranking')
     rf = df.rank(method='min', na_option='top')
@@ -210,8 +210,9 @@ def run_bc_analysis(df, timer):
     compare_kings_seq(rf, [10, 30, 300], start_col=5)
     #the similarity of the top at begin and end is large and then falls very quickly
     # TODO: what happens to the people who start at the bottom.
-    compare_kings_seq(rf, [100, 300, 3000], start_col=5, ascending=True)
-    smallfish = df[df[21] < 0.1][21].index
+    compare_kings_seq(rf, [100, 300, 3000], start_col=5,
+                      ascending=True,)#the ylabel should be similarity
+    #smallfish = df[df[21] < 0.1][21].index
     # TODO: can we find anyone making a smooth climb to the top
 
     timer.tic('density')
@@ -484,5 +485,5 @@ if __name__ == '__main__':
     #print('plotting')
     #lf.mean().plot()
     #filt.mean().plot()
-    dist_changes = filt.diff()
+    dist_changes = filt.T.diff()
     sigma = dist_changes.std()
