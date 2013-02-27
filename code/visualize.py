@@ -10,6 +10,8 @@ from time import time as time
 import timedict as td
 import util
 from kernelio import *
+from plotting import *
+from paper_figures import *
 
 def lognormal_estimates_histogram(dframe):
     """Calculates the log-mean and log-standard deviation assuming that the data
@@ -100,8 +102,9 @@ def plot_kernel(dframe, rows, kernel_name,
     ax.set_xlabel("batch number")
     ax.set_ylabel("rank of "+kernel_name)
     if save:
-        plt.savefig(figure_path+kernel_name+str(time())+'.png')
+        plt.savefig(figure_path+kernel_name+str(time())+'.'+FIGURE_EXTENSION)
     return percs
+
 
 def random_targets(dframe, nplots, nseries, pool=None, **kwargs):
     """ Make nplots figures that each display nseries samples from the data
@@ -218,13 +221,13 @@ def run_bc_analysis(df, timer):
     # Tracing some vertices though time either random or seeded
 
     if TARGETSV:
-        targets = random_targets(rf, 1, 4, pool=TARGETSV)[0].columns
+        targets = random_targets(rf, 1, NTARGETS, pool=TARGETSV, save=True)[0].columns
     else:
         # sample from the set of vertices that have ever been above a high quantile
         q=.500
         qmedians = df.quantile(q)
         topq = df[df > qmedians]
-        targets = random_targets(rf, 1, 6, pool=topq.index)[0].columns
+        targets = random_targets(rf, 1, NTARGETS, pool=topq.index)[0].columns
 
     numzeros = (rf[rf<=1].count())
     numzeros.plot(label='rank($\epsilon)$')
@@ -351,7 +354,7 @@ def exec_crosstabs(df,timestamps,epsilon):
                        na_option='top').T.diff().T[last_col]
     ranks.name = 'delta_rank'
     vals.name = 'delta_val'
-    ct = crosstabs(vals, ranks, eps)
+    ct = crosstabs(vals, ranks, epsilon)
     return ct
 
 def load_mean(count):
@@ -392,9 +395,12 @@ def main(df, timer=None):
     #fit = stats.anderson(l1pf)
     #l1pf.hist(bins=BINCOUNT, normed=True)
     #finding a distribution for the right half of the kernel value distribution
+    return ct
+
 
 if __name__ == '__main__':
-    FIGUREPATH = u'/shared/users/jfairbanks/smisc.sandystudy/output/'
+    FIGUREPATH = u'./figures/'
+    FIGURE_EXTENSION = u'png'
     DATA_DIR = u'../data/kernels/' #symlink this for portability
     NSAMPLES = 1000 #number of batches
     STRIDE = 10 #resolution of time in batches
