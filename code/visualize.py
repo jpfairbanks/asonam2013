@@ -328,16 +328,16 @@ def exec_correlation_analysis(frame, selected_axes,  seq=None,
     return (cseq)
 
 def crosstabs(value_series, rank_series, epsilon):
-    """
+    """ uses a +1 to avoid dividing by zero later
 
     Arguments:
     - `value_series`:
     - `rank_series`:
     - `epsilon`: the threshold for significance
     """
-    mask = value_series.abs() > epsilon
+    mask = value_series.abs().dropna() > epsilon
     sigvals = mask*value_series
-    ct = pd.crosstab(np.sign(sigvals), np.sign(rank_series))
+    ct = pd.crosstab(np.sign(sigvals), np.sign(rank_series), margins=False) + 1
     return ct
 
 def exec_crosstabs(df,timestamps,epsilon):
@@ -350,24 +350,30 @@ def exec_crosstabs(df,timestamps,epsilon):
     """
     frame = df[timestamps]
     last_col = timestamps[-1]
-    vals = np.log(frame+1).T.diff().T[last_col]
+    valsframe = frame
+    vals = valsframe[last_col] - valsframe[timestamps[0]]
     ranks = frame.rank(method='min',
                        na_option='top').T.diff().T[last_col]
     ranks.name = 'delta_rank'
     vals.name = 'delta_val'
     ct = crosstabs(vals, ranks, epsilon)
-    return ct
+    marg_vals = ((ct.T+0.0)/ct.sum(axis=1)).T
+    print('P(deltaRank|deltaValue):')
+    print(marg_vals)
+    marg_ranks = (ct+0.0)/ct.sum(axis=0)
+    return ct, marg_vals, marg_ranks
 
 def load_mean(count):
     df = load_batches('/home/users/jfairbanks/Projects/morerad/'+ KERNEL_NAME+".%d.csv",
                       range(1,count), column=-1)
     return df, df.mean()
 
-def main(df, timer=None):
+def main(df, t, timer=None):
     """
 
     Arguments:
     - `df`:
+    - `t`: a reference column for all single time studies
     - `timer`:
     """
     lf = np.log(df)
@@ -385,17 +391,11 @@ def main(df, timer=None):
     #                          seq=topn, plot=True,
     #                          corrmethod='kendall',)
     #print(out)
-    timestamps = [591,601]
-    eps=.05
+    timestamps = [t, t+STRIDE]
+    eps=0.5
     ct = exec_crosstabs(df, timestamps, eps)
     #pairs = [[t, t+10] for t in df.columns[0:-1:10]]
     #cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
-    #
-    #estimate the lognormality
-    #l1pf = np.log1p(df[291].dropna())
-    #fit = stats.anderson(l1pf)
-    #l1pf.hist(bins=BINCOUNT, normed=True)
-    #finding a distribution for the right half of the kernel value distribution
     return ct
 
 
