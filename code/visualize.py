@@ -447,9 +447,9 @@ if __name__ == '__main__':
             print('we failed to write to hdf, is the hdf library installed?')
     print('data loaded')
     timer.toc('loading data')
-    #main(df, timer)
-    t = 701
+    t = 801
     lf = np.log(df)
+    main_out = main(lf[lf>lf.median()], t,timer)
     #show that we should use the median instead of the mean
     print('comparing')
     compframe = pd.DataFrame(
@@ -462,12 +462,12 @@ if __name__ == '__main__':
     #show density at fixed time t
     show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
     show_histogram_logbc(lf[t], t, median=True, fitter=stats.gamma)
-    frame = df
+    frame = df#df[df>df.median()]
     diffs = frame[t+STRIDE] - frame[t]
     seq = np.log(diffs[(diffs)>0])
-    show_histogram_diffs(seq,t, fitter=stats.laplace)
+    show_histogram_diffs(seq,t, fitter=stats.laplace, name='pos-laplace')
     seq_neg = np.log(diffs[(diffs)<0].abs())
-    show_histogram_diffs(seq_neg,t, fitter=stats.beta)
+    show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
     print('filtering')
     filt = lf[lf>(lf.median())]
     #filt[t].hist(bins=BINCOUNT,normed=True)
