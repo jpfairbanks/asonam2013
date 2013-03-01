@@ -24,7 +24,8 @@ def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
     seq.hist(bins=BINCOUNT, normed=True)
     scaling = 1
     if quantile:
-        plt.axvline(x=seq.quantile(quantile), color='k',label='median')
+        plt.axvline(x=seq.quantile(quantile), color='k',
+                    label='quantile %d' % quantile)
         filtered = seq[seq>seq.quantile(quantile)]
         scaling = 1-quantile
     else:
