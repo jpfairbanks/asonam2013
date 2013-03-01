@@ -17,10 +17,11 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
 from plotting import *
+import kernel_analysis as ka
 FIGUREPATH = u'./figures/'
 FIGURE_EXTENSION = u'png'
 def show_histogram_logbc(ls, t, median=False, fitter=stats.expon):
-    """
+    """ Histogram some data and show a best fit distribution on top.
 
     Arguments:
     - `ls`:
@@ -42,7 +43,7 @@ def show_histogram_logbc(ls, t, median=False, fitter=stats.expon):
     plt.show()
 
 def show_histogram_diffs(seq,t, q=0, fitter=stats.norm, name=None):
-    """
+    """ Histograms the diffs and show a best fit distribution on top.
 
     Arguments:
     - `seq`:
@@ -58,3 +59,42 @@ def show_histogram_diffs(seq,t, q=0, fitter=stats.norm, name=None):
     plt.legend()
     plt.savefig('%sdiff-histogram-%s.%s'% (FIGUREPATH, name, FIGURE_EXTENSION))
     plt.show()
+
+def save_crosstabs(df, t, STRIDE=10, eps=1):
+    """ Makes tables showing the probabilities of
+    changes in ranks against changes in values.
+
+    Arguments:
+    - `df`:
+    - `t`:
+
+    """
+    ct, margv, margr = ka.exec_crosstabs(df, [t, t+STRIDE], eps)
+    ctstr = ct.to_latex()
+    margvstr = margv.to_latex()
+    f = open('crosstab.tex', 'w')
+    f.write(ctstr)
+    f.write(margvstr)
+    f.close()
+
+
+def corr_plot(df):
+    """
+
+    Arguments:
+    - `df`:
+
+    """
+    FILENAME = 'figures/correlation-scatter.png'
+    titles = ['Correlation of Betweenness Centrality over time', '','']
+    xlabels = ['logBC after batch %d']*2
+    ylabels = ['logBC %d']*2
+    print(xlabels)
+    times = [801,811,901]
+    frame = df[times]
+    fig, axes = correlation_changes_over_time(frame,times,)
+    for i,axis in enumerate(axes):
+        axis.set_title(titles[i])
+        axis.set_xlabel(xlabels[i] % times[0])
+        axis.set_ylabel(ylabels[i] % times[i+1])
+    fig.savefig(FILENAME)
