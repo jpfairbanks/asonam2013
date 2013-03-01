@@ -73,6 +73,7 @@ def load_hdf_table(store_name, frame_name):
     """
     store = pd.HDFStore(store_name)
     df = store.select(frame_name)
+    store.close()
     return df
 
 def write_hdf_table(store_name, frame_name, frame):
@@ -86,6 +87,7 @@ def write_hdf_table(store_name, frame_name, frame):
     store = pd.HDFStore(store_name)
     print('writing to hdfstore: %s/%s'% (store_name, frame_name))
     store.append(frame_name, frame)
+    store.close()
     print('successfully wrote to hdfstore')
 
 def load_csv_frame(DATA_DIR, KERNEL_NAME, FILENAME, TIMEINDEX):
