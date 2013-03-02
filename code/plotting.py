@@ -11,6 +11,11 @@ import numpy as np
 
 BINCOUNT = 50
 
+def show_PCA(df):
+    pca = mlab.PCA(df)
+    plt.plot(pca.Y)
+    return pca
+
 def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
     """ Show the histogram of a sequence along with a parametric fit. Allows for
     filtering using a quantile in case the fit only applies to the tail of the
