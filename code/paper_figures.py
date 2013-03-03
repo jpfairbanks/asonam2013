@@ -13,6 +13,7 @@ reused and the specialized in this module.
 
 """
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
