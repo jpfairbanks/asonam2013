@@ -14,6 +14,8 @@ reused and the specialized in this module.
 """
 import pandas as pd
 import matplotlib
+#if running without a display use this for generating to files
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
