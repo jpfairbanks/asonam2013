@@ -74,7 +74,7 @@ def save_crosstabs(df, t, STRIDE=10, eps=1):
 
     """
     ct, margv, margr = ka.exec_crosstabs(df, [t, t+STRIDE], eps)
-    fix_str = lambda s: s.replace('delta\_','$\delta$')
+    fix_str = lambda s: s.replace('delta\_','$\Delta$')
     ctstr = fix_str(ct.to_latex())
     margvstr = fix_str(margv.to_latex())
     print(ctstr, margvstr)
