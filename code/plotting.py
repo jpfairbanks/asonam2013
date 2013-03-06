@@ -75,5 +75,5 @@ def correlation_changes_over_time(df, times, log=True,
                     s=10, alpha=.25, c=color_mask[:,0])
         if color2:
             axis.scatter(x=frame[frame.columns[0]], y=frame[t],
-                         s=10, alpha=.25, c=color_mask[:,i])
+                         s=10, alpha=.7, c=color_mask[:,i])
     return fig, axes

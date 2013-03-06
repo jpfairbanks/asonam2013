@@ -100,9 +100,16 @@ def corr_plot(df):
     print(xlabels)
     times = [801,811,901]
     frame = df[times]
-    fig, axes = correlation_changes_over_time(frame,times,)
+    fig, axes = correlation_changes_over_time(frame, times, color1='b', color2='b')
     for i,axis in enumerate(axes):
         axis.set_title(titles[i])
         axis.set_xlabel(xlabels[i] % times[0])
         axis.set_ylabel(ylabels[i] % times[i+1])
+        axis.axvline(x=np.log(frame[times[0]].quantile(0.5)), color='k',
+                    linestyle='-', label='median %d' % times[0])
+        axis.axhline(y=np.log(frame[times[i+1]].quantile(0.5)),
+                    color='k', linestyle='--',
+                    label='median %d' % times[i+1])
+        axis.legend()
     fig.savefig(FILENAME)
+    return fig, axes
