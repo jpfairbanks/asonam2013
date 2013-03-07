@@ -453,3 +453,4 @@ if __name__ == '__main__':
     #filt.mean().plot()
     dist_changes = filt.T.diff()
     sigma = dist_changes.std()
+    corr_plot(df)
