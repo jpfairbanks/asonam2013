@@ -77,3 +77,31 @@ def correlation_changes_over_time(df, times, log=True,
             axis.scatter(x=frame[frame.columns[0]], y=frame[t],
                          s=10, alpha=.7, c=color_mask[:,i])
     return fig, axes
+
+
+
+def polyfit_plot(frame, degree=1, residuals=True):
+    """ Fit a dataframe and return the polynomials then show them on a plot.
+
+    Arguments:
+    - `frame`: the data you want to fit
+    - `degree`: of the polynomial
+    - `residuals`: do you want to residuals defaults to True
+    """
+
+    for s in frame:
+        print(s)
+        print(frame[s].ix[s::].index)
+    paramframe = pd.DataFrame({s:np.polyfit(y=frame[s].ix[s::],
+                                            x=frame[s].ix[s::].index,deg=degree)
+                               for s in frame})
+    modelframe = pd.DataFrame({s:pd.Series(np.polyval(p=paramframe[s],
+                                                      x=frame[s].ix[s::].index),
+                                           index=frame[s].ix[s::].index)
+                               for s in frame})
+    ax = modelframe.plot(style='--')
+    frame.plot(ax=ax, style='+-')
+    if resids:
+        resids = (modelframe-frame)
+        rax = resids.plot(kind='bar')
+    return ax
