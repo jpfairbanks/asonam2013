@@ -413,9 +413,9 @@ if __name__ == '__main__':
             print('we failed to write to hdf, is the hdf library installed?')
     print('data loaded')
     timer.toc('loading data')
-    t = 801
+    t = 981
     lf = np.log(df)
-    main_out = main(lf[lf>lf.median()], t,timer)
+    #main_out = main(lf[lf>lf.median()], t,timer)
     #show that we should use the median instead of the mean
     print('comparing')
     compframe = pd.DataFrame(
@@ -426,14 +426,17 @@ if __name__ == '__main__':
     #compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
     #TODO: make this quantitative
     #show density at fixed time t
-    show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
-    show_histogram_logbc(lf[t], t, median=True, fitter=stats.gamma)
-    frame = df#df[df>df.median()]
+    #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
+    #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
+    frame = df#[df>df.median()]
     diffs = frame[t+STRIDE] - frame[t]
-    seq = np.log(diffs[(diffs)>0])
-    show_histogram_diffs(seq,t, fitter=stats.laplace, name='pos-laplace')
-    seq_neg = np.log(diffs[(diffs)<0].abs())
+    seq = np.log(diffs[(diffs)>0].dropna())
+    show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
+    seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
     show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
+    seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
+    #not useful because most of the vertices lose BC each round
+    #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
     print('filtering')
     filt = lf[lf>(lf.median())]
     #filt[t].hist(bins=BINCOUNT,normed=True)
@@ -456,4 +459,4 @@ if __name__ == '__main__':
     #corr_plot(df)
     tmpframe = df[df.columns[10::2]]
     ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
-    ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
+    #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
