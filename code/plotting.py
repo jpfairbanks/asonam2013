@@ -101,7 +101,7 @@ def polyfit_plot(frame, degree=1, residuals=True):
                                for s in frame})
     ax = modelframe.plot(style='--')
     frame.plot(ax=ax, style='+-')
-    if resids:
+    if residuals:
         resids = (modelframe-frame)
         rax = resids.plot(kind='bar')
     return ax
