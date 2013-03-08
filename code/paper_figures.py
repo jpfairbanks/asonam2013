@@ -114,13 +114,22 @@ def corr_plot(df):
     fig.savefig(FILENAME)
     return fig, axes
 
-def corr_model(df, stride):
+def corr_model(df, degree=1, method='pearson'):
+    """ Make and save a figure showing how the correlation changes over time.
+    Makes a fixed number of lines and only uses predictions into the future.
+
+    The figure name uses the correlation method and the degree of the model.
+    Arguments:
+    - `df`:
+    -`degree`: of the model to fit with
+    -`method`: correlation method
+
     """
-    """
-    FILENAME = 'figures/correlation-model.png'
-    rhoframe = ka.rhotk(df, df.columns, df.columns[::stride],
-                               method='spearman')
-    ax  = polyfit_plot(rhoframe, degree=2, residuals=False)
+    FILENAME = 'figures/%s-correlation-deg%d-model.png' % (method, degree)
+    portion = len(df.columns)/2
+    rhoframe = ka.rhotk(df, df.columns, df.columns[:portion:portion/4],
+                               method=method)
+    ax  = polyfit_plot(rhoframe, degree=degree, residuals=False)
     ax.set_xlabel("$t+k$ batches")
     ax.set_ylabel("correlation")
     ax.set_title('correlation decays quadratically in gapsize')
