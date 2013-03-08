@@ -395,7 +395,7 @@ if __name__ == '__main__':
     timer.tic('loading data')
     # figure out where data should be found
     FILENAME = 'kernelframe.%s.%d.%d.%d.csv' %(KERNEL_NAME,
-		    INIT_SAMPLE, END_SAMPLE, STRIDE)
+                                               INIT_SAMPLE, END_SAMPLE, STRIDE)
     store_name, frame_name = format_hdf_names(DATA_DIR,
                                               KERNEL_NAME,
                                               INIT_SAMPLE, END_SAMPLE, STRIDE)
