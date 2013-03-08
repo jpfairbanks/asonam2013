@@ -129,7 +129,8 @@ def corr_model(df, degree=1, method='pearson'):
     portion = len(df.columns)/2
     rhoframe = ka.rhotk(df, df.columns, df.columns[:portion:portion/4],
                                method=method)
-    ax  = polyfit_plot(rhoframe, degree=degree, residuals=False)
+    ax  = polyfit_plot(rhoframe, degree=degree, residuals=False, legend=False)
+    ax.legend(ncol=2)
     ax.set_xlabel("$t+k$ batches")
     ax.set_ylabel("correlation")
     ax.set_title('correlation decays quadratically in gapsize')
