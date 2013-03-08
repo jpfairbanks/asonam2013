@@ -414,7 +414,7 @@ if __name__ == '__main__':
     timer.toc('loading data')
     t = 981
     lf = np.log(df)
-    #main_out = main(lf[lf>lf.median()], t,timer)
+    #main_out = main(df, t,timer)
     #show that we should use the median instead of the mean
     print('comparing')
     compframe = pd.DataFrame(
