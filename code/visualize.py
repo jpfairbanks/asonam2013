@@ -239,9 +239,8 @@ def run_bc_analysis(df, timer):
                               title='profile of vertex %d'%v,)
     difftarg = lf.ix[targets].T.diff()
     diffax = difftarg.plot(title='diffs in log '+ KERNEL_NAME)
-    diffax.set_xlabel('batch')
+    diffax.set_xlabel('batch number')
     diffax.set_ylabel('change')
-    plt.figure()
     return targets, summary
 
 def derivative_analysis(lf, vertices, timer=None):
@@ -376,14 +375,14 @@ if __name__ == '__main__':
     TIMEINDEX = pd.Index(range(INIT_SAMPLE,END_SAMPLE,STRIDE))
     NTARGETS = 8 #number of series for the plots
     BINCOUNT = 50 #how many bins for histograms
-    #TARGETSV = []
-    TARGETSV = [688773,
+    TARGETSV = []
+    '''TARGETSV = [688773,
                 756680,
                 984640,
                 1067645,
                 3030528,
                 3035516,
-                ]
+                ]'''
     #[3784858, 2357671, 2975930, 359724, 2124973, 3732925,]
     #vertices that I picked by hand
     KERNEL_NAME = "betweenness_centrality"
