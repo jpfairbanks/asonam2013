@@ -74,5 +74,8 @@ def rhotk(df,sample_times, display_starts, method='pearson'):
     Spearman's correlation is a rank correlation and so is for any monotonic
     relationship.
     """
-    rhos = df[sample_times].corr(method=method)[display_starts]
+    rf = df[sample_times].corr(method=method)
+    rhos = pd.DataFrame(np.tril(rf),
+                        index=rf.index,columns=rf.columns)[display_starts]
+    rhos = rhos.replace(0,np.nan)
     return rhos
