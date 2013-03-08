@@ -15,6 +15,10 @@ def crosstabs(value_series, rank_series, epsilon):
     - `value_series`:
     - `rank_series`:
     - `epsilon`: the threshold for significance
+
+    Returns:
+    - `ct`: the crosstabulation dataframe
+
     """
     mask = value_series.abs().dropna() > epsilon
     sigvals = mask*value_series
@@ -22,7 +26,12 @@ def crosstabs(value_series, rank_series, epsilon):
     return ct
 
 def exec_crosstabs(df,timestamps,epsilon):
-    """
+    """ use the crosstabs function to make the tables corresponding to the joint
+    probability distribution of changes in value and changes in rank and the
+    conditional distribution of change in rank given change in value. This is
+    helps one understand the relationship between these changes. The conditional
+    probability tables tells us what the probability of the change in rank
+    occuring once we know what the change in value was.
 
     Arguments:
     - `df`:
