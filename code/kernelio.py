@@ -61,7 +61,7 @@ def format_hdf_names(data_dir, kernel_name, init_sample, end_sample, stride):
     """
     store_name = data_dir+kernel_name+'.hf'
     frame_name = '%s.%d.%d.%d' % (kernel_name,
-			      init_sample, end_sample, stride)
+                                  init_sample, end_sample, stride)
     return store_name, frame_name
 
 def load_hdf_table(store_name, frame_name):
