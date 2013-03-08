@@ -113,3 +113,16 @@ def corr_plot(df):
         axis.legend()
     fig.savefig(FILENAME)
     return fig, axes
+
+def corr_model(df, stride):
+    """
+    """
+    FILENAME = 'figures/correlation-model.png'
+    rhoframe = ka.rhotk(df, df.columns, df.columns[::stride],
+                               method='spearman')
+    ax  = polyfit_plot(rhoframe, degree=2, residuals=False)
+    ax.set_xlabel("$t+k$ batches")
+    ax.set_ylabel("correlation")
+    ax.set_title('correlation decays quadratically in gapsize')
+    ax.figure.savefig(FILENAME)
+    return ax, rhoframe
