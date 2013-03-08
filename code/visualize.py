@@ -453,4 +453,7 @@ if __name__ == '__main__':
     #filt.mean().plot()
     dist_changes = filt.T.diff()
     sigma = dist_changes.std()
-    corr_plot(df)
+    #corr_plot(df)
+    tmpframe = df[df.columns[10::2]]
+    ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
+    ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
