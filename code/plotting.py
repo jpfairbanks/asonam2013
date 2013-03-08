@@ -80,7 +80,7 @@ def correlation_changes_over_time(df, times, log=True,
 
 
 
-def polyfit_plot(frame, degree=1, residuals=True):
+def polyfit_plot(frame, degree=1, residuals=True,):
     """ Fit a dataframe and return the polynomials then show them on a plot.
 
     Arguments:
@@ -96,8 +96,9 @@ def polyfit_plot(frame, degree=1, residuals=True):
                                                       x=frame[s].ix[s::].index),
                                            index=frame[s].ix[s::].index)
                                for s in frame})
-    ax = modelframe.plot(style='--')
-    frame.plot(ax=ax, style='+-')
+    ax = modelframe.plot(style='--', legend=False)
+    frame.plot(ax=ax, style='+-', legend=False)
+    ax.legend(ncol=2)
     if residuals:
         resids = (modelframe-frame)
         rax = resids.plot(kind='bar')
