@@ -89,9 +89,6 @@ def polyfit_plot(frame, degree=1, residuals=True):
     - `residuals`: do you want to residuals defaults to True
     """
 
-    for s in frame:
-        print(s)
-        print(frame[s].ix[s::].index)
     paramframe = pd.DataFrame({s:np.polyfit(y=frame[s].ix[s::],
                                             x=frame[s].ix[s::].index,deg=degree)
                                for s in frame})
