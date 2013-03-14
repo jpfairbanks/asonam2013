@@ -79,3 +79,16 @@ def rhotk(df,sample_times, display_starts, method='pearson'):
                         index=rf.index,columns=rf.columns)[display_starts]
     rhos = rhos.replace(0,np.nan)
     return rhos
+
+# TODO: use this
+def rank_sums_test(treatment1, treatment2):
+    """ See if the distribution of treatmen1 is different than
+    the distribution treatment2
+
+    Arguments:
+    - `treatment1`:
+    - `treatment2`:
+    """
+    z_stat, p_val = stats.ranksums(treatment1, treatment2)
+    print "Mann-Whitney-Wilcoxon RankSum P for treatments 1 and 2 =", p_val
+    return z_stat, p_val

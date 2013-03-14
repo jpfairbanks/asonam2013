@@ -433,14 +433,20 @@ if __name__ == '__main__':
     frame = df#[df>df.median()]
     diffs = frame[t+STRIDE] - frame[t]
     seq = np.log(diffs[(diffs)>0].dropna())
-    show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
     seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
+    ka.rank_sums_test(seq, seq_neg)
+    ksp = stats.kstest(seq, 'norm')
+    print(ksp)
+    show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
+    show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
+                         fitter=stats.norm, name='pos-trimmed-norm')
     show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
     seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
     #not useful because most of the vertices lose BC each round
     #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
     print('filtering')
     filt = lf[lf>(lf.median())]
+    pf.cdf_plot_save(filt[[701,991]])
     #filt[t].hist(bins=BINCOUNT,normed=True)
     #show how the mean of the distribution changes over time
     exponfit = lambda seq:stats.expon.fit(seq.dropna())
