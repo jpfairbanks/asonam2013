@@ -16,6 +16,36 @@ def show_PCA(df):
     plt.plot(pca.Y)
     return pca
 
+def cdf_plot(df, fitter=stats.norm,
+              cdf=True, colors = ['b','g','r','c','m','y','k','w'],):
+    """
+
+    Arguments:
+    - `df`:
+    - `fitter`: a statistical distribution with a fit method
+    - `cdf`: defaults to True, showing the CDF version.
+             If false use the survival function.
+    """
+    ords = map(lambda s: df[s].dropna().order(ascending=cdf), df.columns)
+    names = [s.name for s in ords]
+    oframes = map(lambda s: pd.DataFrame({'x':s,
+                                            'CDF(x)':s.rank(ascending=cdf)/s.count()
+                                            }).set_index('x'),
+                  ords)
+    fig, ax = plt.subplots(1,1,1)
+    figs = [ax.plot(seq.index, seq, color=col, label='%s empirical'%name)
+            for seq, col, name in zip(oframes, colors, names)]
+    models = map(lambda s: fitter(*fitter.fit(s)), ords)
+    domains = map(lambda s: np.linspace(s.min(),s.max(), 1000), ords)
+    if cdf:
+        yvals = [model.cdf(domain) for model, domain in zip(models,domains)]
+    else:
+        yvals = [model.sf(domain) for model, domain in zip(models,domains)]
+    for x, y, col, name  in zip(domains, yvals, colors, names):
+        ax.plot(x, y, label='%s model' %name,
+                color=col, linestyle='--')
+    return fig, ax
+
 def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
     """ Show the histogram of a sequence along with a parametric fit. Allows for
     filtering using a quantile in case the fit only applies to the tail of the
