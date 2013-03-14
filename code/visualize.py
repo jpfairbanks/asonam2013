@@ -9,8 +9,11 @@ import scipy.stats as stats
 from time import time as time
 import timedict as td
 import util
-from kernelio import *
+import kernelio as kio
 import kernel_analysis as ka
+import plotting as plg
+import paper_figures as pf
+from kernelio import *
 from plotting import *
 from paper_figures import *
 
