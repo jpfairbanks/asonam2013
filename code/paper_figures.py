@@ -56,7 +56,7 @@ def cdf_plot_save(df):
     ax.set_title('CDF of %s(v)'%kernel_name)
     ax.set_xlabel('%s(v)'%kernel_name)
     ax.set_ylabel('CDF(%s(v))'%kernel_name)
-    fig.savefig(FIGUREPATH+'cdf_logbc.png',)
+    fig.savefig(FIGUREPATH+'cdf-logbc.%s'%FIGURE_EXTENSION,)
     return fig, ax
 
 def show_histogram_diffs(seq,t, q=0, fitter=stats.norm, name=None):
