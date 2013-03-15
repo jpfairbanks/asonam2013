@@ -122,12 +122,14 @@ def corr_plot(df):
     - `df`:
 
     """
+    times = df.columns
+    frame = df
     FILENAME = 'figures/correlation-scatter.png'
     titles = ['Correlation of Betweenness Centrality over time', '','']
     xlabels = ['logBC after batch %d']*2
     ylabels = ['logBC %d']*2
     print(xlabels)
-    fig, axes = correlation_changes_over_time(frame, times, color1='b', color2='b')
+    fig, axes = correlation_changes_over_time(df, times, color1='b', color2='b')
     for i,axis in enumerate(axes):
         axis.set_title(titles[i])
         axis.set_xlabel(xlabels[i] % times[0])
