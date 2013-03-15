@@ -111,10 +111,12 @@ def save_crosstabs(df, t, STRIDE=10, eps=1):
     f = open('margtab.tex', 'w')
     f.write(margvstr)
     f.close()
-
+    return True
 
 def corr_plot(df):
-    """
+    """ Show a scatter plot between the first column and all of the other
+    columns. This allows an analyst to see if there is a linear relationship
+    between the values and how far that trend goes.
 
     Arguments:
     - `df`:
