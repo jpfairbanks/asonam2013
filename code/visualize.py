@@ -449,21 +449,6 @@ if __name__ == '__main__':
     pf.cdf_plot_save(filt[[701,991]])
     #filt[t].hist(bins=BINCOUNT,normed=True)
     #show how the mean of the distribution changes over time
-    exponfit = lambda seq:stats.expon.fit(seq.dropna())
-    #frame = pd.Series(filt.apply(exponfit))
-    #location
-    #taillocs = pd.Series(frame.index.map(lambda i: frame[i][0]))
-    #taillocs.plot()
-    #shape
-    #TODO: make a seperate plot or a multiple axes plot
-    #tailshape = pd.Series(frame.index.map(lambda i: frame[i][1]))
-    #tailshape.plot()
-    #for filtered and unfiltered data
-    #print('plotting')
-    #lf.mean().plot()
-    #filt.mean().plot()
-    dist_changes = filt.T.diff()
-    sigma = dist_changes.std()
     #corr_plot(df)
     tmpframe = df[df.columns[10::2]]
     ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
