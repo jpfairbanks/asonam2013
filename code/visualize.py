@@ -345,57 +345,23 @@ def main(df, t, timer=None):
     - `timer`:
     """
     lf = np.log(df)
-    #run_bc_analysis(df, timer)
+    run_bc_analysis(df, timer)
     #peakslocs = derivative_analysis(df.apply(np.log), None, timer)
     #peakloc_counts = peakslocs.value_counts()
     #peakpeaks = peakslocs.value_counts()[:3]
     #cf = load_batches(DATA_DIR+'components.%d.csv', TIMEINDEX,)
     #cf[[421,431,441]].dropna(how='all')
     #trif = load_batches(DATA_DIR+ 'triangles'+".%d.csv", TIMEINDEX, column=-1)
-    #selected_axes = [501,511,901]
-    #topn = pd.Index([10,50,100,500,1000,5000,10000])
-    #rplf = df[selected_axes].replace(np.nan, 0)
-    #out = exec_correlation_analysis(rplf, selected_axes,
-    #                          seq=topn, plot=True,
-    #                          corrmethod='kendall',)
-    #print(out)
-    timestamps = [t, t+STRIDE]
-    eps=0.5
-    ct = ka.exec_crosstabs(df, timestamps, eps)
-    #pairs = [[t, t+10] for t in df.columns[0:-1:10]]
-    #cts = [exec_crosstabs(df, tpair, eps) for tpair in pairs]
-    return ct
+    return True
 
+def get_me_data():
+    """
 
-if __name__ == '__main__':
-    FIGUREPATH = u'./figures/'
-    FIGURE_EXTENSION = u'png'
-    DATA_DIR = u'../data/kernels/' #symlink this for portability
-    NSAMPLES = 1000 #number of batches
-    STRIDE = 10 #resolution of time in batches
-    INIT_SAMPLE = 1
-    END_SAMPLE = NSAMPLES #TODO subtract one from this
-    TIMEINDEX = pd.Index(range(INIT_SAMPLE,END_SAMPLE,STRIDE))
-    NTARGETS = 8 #number of series for the plots
-    BINCOUNT = 50 #how many bins for histograms
-    TARGETSV = []
-    '''TARGETSV = [688773,
-                756680,
-                984640,
-                1067645,
-                3030528,
-                3035516,
-                ]'''
-    #[3784858, 2357671, 2975930, 359724, 2124973, 3732925,]
-    #vertices that I picked by hand
-    KERNEL_NAME = "betweenness_centrality"
-    KERNEL_NAMES = ['bc', 'communities', 'components']
-    timer = td.timedict()
-
-    #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
-
-    timer.tic('loading data')
-    # figure out where data should be found
+    Arguments:
+    - `store_name`:
+    - `frame_name`:
+    - `filename`:
+    """
     FILENAME = 'kernelframe.%s.%d.%d.%d.csv' %(KERNEL_NAME,
                                                INIT_SAMPLE, END_SAMPLE, STRIDE)
     store_name, frame_name = format_hdf_names(DATA_DIR,
@@ -413,25 +379,69 @@ if __name__ == '__main__':
         except Exception as ex:
             print(ex)
             print('we failed to write to hdf, is the hdf library installed?')
+    return df
+if __name__ == '__main__':
+    FIGUREPATH = u'./figures/'
+    FIGURE_EXTENSION = u'png'
+    DATA_DIR = u'../data/kernels/' #symlink this for portability
+    NSAMPLES = 1000 #number of batches
+    STRIDE = 10 #resolution of time in batches
+    INIT_SAMPLE = 1
+    END_SAMPLE = NSAMPLES #TODO subtract one from this
+    TIMEINDEX = pd.Index(np.arange(INIT_SAMPLE,END_SAMPLE,STRIDE))
+    NTARGETS = 8 #number of series for the plots
+    BINCOUNT = 50 #how many bins for histograms
+    TARGETSV = []
+    '''TARGETSV = [688773,
+                756680,
+                984640,
+                1067645,
+                3030528,
+                3035516,
+                ]'''
+    #[3784858, 2357671, 2975930, 359724, 2124973, 3732925,]
+    #vertices that I picked by hand
+    KERNEL_NAME = "betweenness_centrality"
+    KERNEL_NAMES = ['bc', 'communities', 'components', 'triangles']
+    timer = td.timedict()
+
+    #run_lognormal_analysis(DATA_DIR, NSAMPLES, KERNEL_NAME)
+
+    timer.tic('loading data')
+    # figure out where data should be found
+    df = get_me_data()
     print('data loaded')
     timer.toc('loading data')
     t = 981
     lf = np.log(df)
-    #main_out = main(df, t,timer)
+    main_out = main(df, t,timer)
     #show that we should use the median instead of the mean
     print('comparing')
-    #show density at fixed time t
+    #====Parametric Analysis================#
+    ##=======show density at fixed time t=============
     #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
     #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
+    print('filtering')
+    ##===========Show the CDF for the statistic at a fixed time========#
+    print('starting CDF static')
+    filt = lf[lf>(lf.median())]
+    pf.cdf_plot_save(filt[[t-(10*STRIDE),t]])
+    print('ending CDF static')
+
+    #======Analysis of Derivatives==============
+    #filt[t].hist(bins=BINCOUNT,normed=True)
+    print('starting derivative analysis')
     frame = df#[df>df.median()]
-    diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2
+    diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2 #use a centered derivative
     seq = np.log(diffs[(diffs)>0].dropna())
     seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
     diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
+    ##======Show the CDF for the diffs separating positive and negative====
     pf.cdf_plot_save_diffs(diffr,)
     ka.rank_sums_test(seq, seq_neg)
     ksp = stats.kstest(seq, 'norm')
     print(ksp)
+    ##=====Show the density estimates for pos and neg separately
     show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
     #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
     #                     fitter=stats.norm, name='pos-trimmed-norm')
@@ -439,12 +449,19 @@ if __name__ == '__main__':
     #seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
     #not useful because most of the vertices lose BC each round
     #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
-    print('filtering')
-    filt = lf[lf>(lf.median())]
-    pf.cdf_plot_save(filt[[701,991]])
-    #filt[t].hist(bins=BINCOUNT,normed=True)
+    print('ending derivative analysis')
+
     #show how the mean of the distribution changes over time
-    #corr_plot(df)
+
+
+    #======Correlation Analysis===========#
+    print('starting correlation analysis')
+    corr_plot(df[[801,811,901]])
     tmpframe = df[df.columns[10::2]]
+    #pearson is linear and spearman in any monotonic correlation
     ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
     #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
+    print('ending correlation analysis')
+
+    #=====Crosstabs for conditional probability
+    pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
