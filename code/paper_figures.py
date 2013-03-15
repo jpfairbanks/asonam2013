@@ -162,6 +162,22 @@ def corr_model(df, degree=1, method='pearson'):
     ax.legend(ncol=2)
     ax.set_xlabel("$t+k$ batches")
     ax.set_ylabel("correlation")
-    ax.set_title('correlation decays quadratically in gapsize')
+    ax.set_title('correlation decays as gapsize increases')
     ax.figure.savefig(FILENAME)
     return ax, rhoframe
+
+def rank_vals(df,tend=911, tstart=891, ):
+    """
+
+    Arguments:
+    - `df`:
+    """
+    drf = (df[tend].rank()-df[tstart].rank())/(tend-tstart)
+    ctdiff = (df[tend]-df[tstart])/(tend-tstart)
+    table = pd.DataFrame({'dval':ctdiff,'drank':drf})
+    ptab = table[table.dval>0]
+    ntab = table[table.dval<0]
+    fig, ax = plt.subplots(1,1,1)
+    ax.scatter(np.log(-1 * ntab.dval), ntab.drank, color='r', alpha=.1)
+    ax.scatter(np.log( 1 * ptab.dval), ptab.drank, color='b', alpha=.1)
+    return fig, ax
