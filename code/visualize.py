@@ -420,28 +420,23 @@ if __name__ == '__main__':
     #main_out = main(df, t,timer)
     #show that we should use the median instead of the mean
     print('comparing')
-    compframe = pd.DataFrame(
-        {
-            'median': lf[lf>lf.median()][t],
-            'mean'  : lf[lf>lf.mean()][t]
-        })
-    #compframe.hist(bins=BINCOUNT, sharey=True, sharex=True)
-    #TODO: make this quantitative
     #show density at fixed time t
     #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
     #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
     frame = df#[df>df.median()]
-    diffs = frame[t+STRIDE] - frame[t]
+    diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2
     seq = np.log(diffs[(diffs)>0].dropna())
     seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
+    diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
+    pf.cdf_plot_save_diffs(diffr,)
     ka.rank_sums_test(seq, seq_neg)
     ksp = stats.kstest(seq, 'norm')
     print(ksp)
     show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
-    show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
-                         fitter=stats.norm, name='pos-trimmed-norm')
+    #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
+    #                     fitter=stats.norm, name='pos-trimmed-norm')
     show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
-    seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
+    #seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
     #not useful because most of the vertices lose BC each round
     #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
     print('filtering')
