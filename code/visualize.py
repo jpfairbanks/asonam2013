@@ -102,9 +102,9 @@ def plot_kernel(dframe, rows, kernel_name,
     # TODO: normalize
     percs =  dframe.ix[rows].T
     ax = percs.plot(**kwargs)
-    ax.set_title(kernel_name+" @mentions by vertex")
+    ax.set_title("Traces in %s" % kernel_name)
     ax.set_xlabel("batch number")
-    ax.set_ylabel("rank of "+kernel_name)
+    ax.set_ylabel(kernel_name)
     if save:
         plt.savefig(figure_path+kernel_name+str(time())+'.'+FIGURE_EXTENSION)
     return percs
@@ -224,18 +224,18 @@ def run_bc_analysis(df, timer):
                           plot=True, title='changing distribution of log(bc)')
     timer.toc('density')
     # Tracing some vertices though time either random or seeded
-
+    lf = np.log(df)
     if TARGETSV:
-        targets = random_targets(rf, 1, NTARGETS, pool=TARGETSV, save=True)[0].columns
+        targets = random_targets(lf, 1, NTARGETS, pool=TARGETSV, save=True)[0].columns
     else:
         # sample from the set of vertices that have ever been above a high quantile
         q=.500
         qmedians = df.quantile(q)
         topq = df[df > qmedians]
-        targets = random_targets(rf, 1, NTARGETS, pool=topq.index)[0].columns
+        targets = random_targets(lf, 1, NTARGETS, pool=topq.index)[0].columns
 
     numzeros = (rf[rf<=1].count())
-    numzeros.plot(label='rank($\epsilon)$')
+    #numzeros.plot(label='rank($\epsilon)$')
     v = targets[0]
     lf = df.apply(np.log)
     summary = describe_vertex(df, lf, rf, v, plot=True,
