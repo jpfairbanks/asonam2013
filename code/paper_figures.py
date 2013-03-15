@@ -59,6 +59,20 @@ def cdf_plot_save(df):
     fig.savefig(FIGUREPATH+'cdf-logbc.%s'%FIGURE_EXTENSION,)
     return fig, ax
 
+def cdf_plot_save_diffs(df):
+    """
+    Customize this function to chose colors, cdf vs survival func, kernel_name
+    """
+    kernel_name='log(|dBC/dt|)'
+    fig, ax = cdf_plot(df, fitter=stats.beta,)
+    ax.legend()
+    ax.set_title('CDF of %s(v)'%kernel_name)
+    ax.set_xlabel('%s(v)'%kernel_name)
+    ax.set_ylabel('CDF(%s(v))'%kernel_name)
+    fig.savefig(FIGUREPATH+'cdf-deriv-logbc.%s'%FIGURE_EXTENSION,)
+    return fig, ax
+
+
 def show_histogram_diffs(seq,t, q=0, fitter=stats.norm, name=None):
     """ Histograms the diffs and show a best fit distribution on top.
 

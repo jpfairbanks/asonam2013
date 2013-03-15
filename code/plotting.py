@@ -35,15 +35,16 @@ def cdf_plot(df, fitter=stats.norm,
     fig, ax = plt.subplots(1,1,1)
     figs = [ax.plot(seq.index, seq, color=col, label='%s empirical'%name)
             for seq, col, name in zip(oframes, colors, names)]
-    models = map(lambda s: fitter(*fitter.fit(s)), ords)
-    domains = map(lambda s: np.linspace(s.min(),s.max(), 1000), ords)
-    if cdf:
-        yvals = [model.cdf(domain) for model, domain in zip(models,domains)]
-    else:
-        yvals = [model.sf(domain) for model, domain in zip(models,domains)]
-    for x, y, col, name  in zip(domains, yvals, colors, names):
-        ax.plot(x, y, label='%s model' %name,
-                color=col, linestyle='--')
+    if fitter is not None:
+        models = map(lambda s: fitter(*fitter.fit(s)), ords)
+        domains = map(lambda s: np.linspace(s.min(),s.max(), 1000), ords)
+        if cdf:
+            yvals = [model.cdf(domain) for model, domain in zip(models,domains)]
+        else:
+            yvals = [model.sf(domain) for model, domain in zip(models,domains)]
+        for x, y, col, name  in zip(domains, yvals, colors, names):
+            ax.plot(x, y, label='%s model' %name,
+                    color=col, linestyle='--')
     return fig, ax
 
 def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
