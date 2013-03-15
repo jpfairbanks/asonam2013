@@ -127,8 +127,6 @@ def corr_plot(df):
     xlabels = ['logBC after batch %d']*2
     ylabels = ['logBC %d']*2
     print(xlabels)
-    times = [801,811,901]
-    frame = df[times]
     fig, axes = correlation_changes_over_time(frame, times, color1='b', color2='b')
     for i,axis in enumerate(axes):
         axis.set_title(titles[i])
