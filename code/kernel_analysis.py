@@ -2,11 +2,25 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 import scipy.stats as stats
+import matplotlib.mlab as mlab
 #frame = bcf.join(oldbcf[[4]], how='outer', lsuffix='new', rsuffix='old')
 
 #TODO: add an analysis for clustering vertices based on there kernel features
 #TODO: try and find journalists based on this
 #TODO: PCA the deg, cc, bc data for some batch
+
+def count_change_directions(df, eps=None):
+    """Count the number of vertices that increase, stay constant or decrease
+    df is expected to be items in the rows and time steps in the columns
+
+    Arguments:
+    - `df`: the frame you care about columns are time rows are vertices
+    - `eps`: threshold to use, not implemented yet
+    """
+    if eps is not None:
+        print('\nthresholding not implemented yet. We are using threshold of 0')
+    return np.sign(df.T.diff().T).apply(pd.value_counts).T
+
 
 def crosstabs(value_series, rank_series, epsilon):
     """ uses a +1 to avoid dividing by zero later
@@ -92,3 +106,14 @@ def rank_sums_test(treatment1, treatment2):
     z_stat, p_val = stats.ranksums(treatment1, treatment2)
     print "Mann-Whitney-Wilcoxon RankSum P for treatments 1 and 2 =", p_val
     return z_stat, p_val
+
+def pca(df):
+    """
+
+    Arguments:
+    - `df`:
+    """
+    pika = mlab.PCA(df.dropna())
+    pj = np.array([pika.project(df.T[r]) for r in df.T])
+    pjf = pd.DataFrame(pj)
+    return pjf
