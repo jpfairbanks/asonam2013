@@ -35,6 +35,7 @@ def cdf_plot(df, fitter=stats.norm,
     fig, ax = plt.subplots(1,1,1)
     figs = [ax.plot(seq.index, seq, color=col, label='%s empirical'%name)
             for seq, col, name in zip(oframes, colors, names)]
+    #using a model if one is suggested to us.
     if fitter is not None:
         models = map(lambda s: fitter(*fitter.fit(s)), ords)
         domains = map(lambda s: np.linspace(s.min(),s.max(), 1000), ords)
