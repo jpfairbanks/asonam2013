@@ -1,20 +1,38 @@
-#import kernel_analysis as ka
 import kernelio as kio
+import kernel_analysis as ka
+import plotting as plg
 import numpy as np
+import scipy as scipy
+import scipy.stats as stats
 import pandas as pd
 import matplotlib.pyplot as plt
-def count_change_directions(df, eps=None):
-    """Count the number of vertices that increase, stay constant or decrease
-
-    Arguments:
-    - `df`: the frame you care about columns are time rows are vertices
-    - `eps`: threshold to use, not implemented yet
+import argparse
+# Input Output
+DATA_DIR      = u'/scratch/jfairbanks/tri_bc_sandy/'
+POST_PROC_DIR = u'/scratch/jfairbanks/tri_bc_sandy/post_processing/'
+TIMEINDEX=pd.Index(np.arange(1,100,1))
+t = 99 #the time point of interest
+def load_data(data_dir, post_proc_dir, timeindex, timepoint):
     """
-    if eps is not None:
-        print('\nthresholding not implemented yet. We are using threshold of 0')
-    return np.sign(df.T.diff().T).apply(pd.value_counts).T
+    Arguments:
+    =========
+    - `data_dir` : where the data lives
+    - `post_proc_dir` : where to put my output/cache
+    - `timeindex`: the indices to load
+    - `timepoint`: the time stamp of interest
+    """
+    ccf    = kio.load_csv_frame(DATA_DIR, 'local_clustering_coefficients',
+                             POST_PROC_DIR+'localcc.1.100.10.csv', TIMEINDEX)
+    trif   = kio.load_csv_frame(DATA_DIR, 'triangles',
+                             POST_PROC_DIR+'triangles.1.100.10.csv', TIMEINDEX)
+    namesf = pd.read_csv(DATA_DIR+'triangles.100.csv', header=None)
+    names = namesf[[0,1]].set_index(0)
+    return trif, ccf, namesf
+# ========
 
-def change_counting_plot(change_frame, ):
+# Plotting
+# ========
+def count_changes_plot(change_frame, ):
     """ Plots the number of vertices changing in each direction
 
     Arguments:
@@ -28,22 +46,113 @@ def change_counting_plot(change_frame, ):
     axes.set_xlabel('batch number')
     axes.set_ylabel('number of vertices')
     return axes
-DATA_DIR =u'/scratch/jfairbanks/sandy_triangles10x/'
-TIMEINDEX=pd.Index(np.arange(1,100,1))
-ccf = kio.load_csv_frame(DATA_DIR, 'local_clustering_coefficients',
-                         'localcc.1.100.10.csv', TIMEINDEX)
-trif = kio.load_csv_frame(DATA_DIR, 'triangles',
-                         'triangles.1.100.10.csv', TIMEINDEX)
-#how many vertices change their CC in each direction over time
-change_counting_plot(count_change_directions(df,))
-fig = plt.figure()
-np.log1p(trif[99]).order().plot(fig=fig)
-fig = plt.figure()
-globalcc = ccf.mean()
-globalcc.plot(fig=fig)
 
-"""bcf = kio.load_hdf_table(*kio.format_hdf_names(DATA_DIR,
-                                               'betweenness_centrality',
-                                               1,1000, 10))
-df = ccf.join(bcf, how='inner', lsuffix='cc', rsuffix='bc')
-"""
+def save_globalcc_over_time(ccf, title=""):
+    """
+
+    Arguments:
+    - `ccf`:
+    """
+    fig, axes = plt.subplots(1,1,1)
+    globalcc = ccf.mean()
+    axes.plot(globalcc.index, globalcc)
+    axes.set_ylabel("mean Clustering Coefficient")
+    axes.set_xlabel("time (batches)")
+    axes.set_title(title)
+    return fig, axes
+
+def save_cdf(cdf, title=""):
+    """
+
+    Arguments:
+    - `cdf`:
+    """
+    fig, axes = plt.subplots(1,1,1)
+    axes.plot(cdf, np.arange(cdf.count()))
+    axes.set_ylabel("number of vertices")
+    axes.set_xlabel("log(triangles)")
+    aces.set_title(title)
+    return fig, axes
+
+def get_args():
+    """
+    This functions parses the options and returns them as an object
+    use args.name to access the value of argument <name>
+
+    add new options here
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--static', help='show static density estimates',
+                        action='store_true')
+    parser.add_argument('-t', '--temporal', help='show how statistics change over time',
+                        action='store_true')
+    parser.add_argument('-d', '--derivative', help='show an analysis of the derivatives of the data',
+                        action='store_true')
+    parser.add_argument('-r', '--correlation', help='plot the function rho(t,k)',
+                        action='store_true')
+    parser.add_argument('--scatter',
+                        help='show scatter matrix of the data',
+                        action='store_true')
+    parser.add_argument('--pca',
+                        help='show scatter matrix using  principal components of the data',
+                        action='store_true')
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = get_args()
+    t = 99
+    #get me some data
+    trif, ccf, namesf, = load_data(DATA_DIR,
+                                   POST_PROC_DIR, TIMEINDEX, t)
+
+    #degf = kio.load_csv_frame(DATA_DIRm 'degree',
+    #'degree.1.100.10', TIMEINDEX)
+
+    # Static analyses
+    if args.static:
+        #density estimation static of number of triangles
+        logtrif = np.log1p(trif)
+        plg.cdf_plot(logtrif[[t]], fitter=stats.expon)
+        #density estimation of CC
+        plg.cdf_plot(ccf[[t]], fitter=stats.gamma)
+
+
+    # Temporal analysis
+    if args.temporal:
+        filtitle = 'For vertices with at least one triangle'
+        save_globalcc_over_time(ccf[ccf>0], title=filtitle)
+        save_globalcc_over_time(ccf, title='All vertices')
+
+    if args.correlation:
+    # Correlation analysis
+        sample_times = ccf.columns
+        display_starts = sample_times[:len(sample_times)/2:10]
+        rhoframe = ka.rhotk(ccf, sample_times, display_starts, method='pearson')
+        print(rhoframe)
+        rhoframe.plot(title="Rho_cc(t,k)")
+    # Differences Analysis
+    if args.derivative:
+        #how many vertices change their CC in each direction over time
+        change_frame = ka.count_change_directions(ccf,)
+        count_changes_plot(change_frame)
+        diffst = (ccf[t]-ccf[t-2])/2
+        nzdiffst = diffst[diffst!=0].dropna()
+        fig, axes = plt.subplots(1,1,1)
+        plg.show_histogram_parameteric_fit(nzdiffst, t-1,)
+        plg.cdf_plot(pd.DataFrame(nzdiffst))
+
+    inframe = pd.DataFrame({'tri': trif[t],
+                            'cc' : ccf[t]})
+    if args.scatter:
+        pd.scatter_matrix(inframe)
+    if args.pca:
+        pjf = ka.pca(inframe)
+        pd.scatter_matrix(pjf)
+
+
+    """bcf = kio.load_hdf_table(*kio.format_hdf_names(DATA_DIR,
+                                                   'betweenness_centrality',
+                                                   1,1000, 10))
+    df = ccf.join(bcf, how='inner', lsuffix='cc', rsuffix='bc')
+    """
