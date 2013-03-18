@@ -30,8 +30,8 @@ def load_sparse_vec(pathfmt, batch, column=-1):
     path = pathfmt % (batch)
     dframe = pd.read_csv(path, index_col=0, header=None)
     dframe = pd.DataFrame(dframe[dframe.columns[column]],columns=[batch])
-    nonzero = dframe[dframe>0].dropna()
-    return nonzero
+    nonzero = dframe[dframe!=0].dropna()
+    return dframe
 
 def load_batches(pathfmt, batches, column=-1):
     """Load a set of batches into a big data frame
