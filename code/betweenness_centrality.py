@@ -2,6 +2,7 @@
 into visualizations for the paper
 """
 from __future__ import print_function
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -84,46 +85,6 @@ def compare_kings_seq(rf, seq, start_col=0, end_col=-1,
         ser.plot(**kwargs)
     return ser
 
-def plot_kernel(dframe, rows, kernel_name,
-                figure_path, save=False, **kwargs):
-    """ Makes a plot  of the kernel values for the rows over time
-
-    Arguments:
-    - `dframe`: the  DataFrame of kernel values at time steps in the columns and vertices as rows
-    - `rows`: the set of vertices to display
-    - `kernel_name`: the text that will be used in the title and filename
-    - `figure_path`: where to save the figure ending in a slash
-    - `save`: boolean indicating whether to save or not default to False
-    - `**kwargs`: matplotlib keyword args passed to plot
-
-    Returns:
-    - `percs`: the kernel values restricted to the rows transposed for plotting
-    """
-    # TODO: normalize
-    percs =  dframe.ix[rows].T
-    ax = percs.plot(**kwargs)
-    ax.set_title("Traces in %s" % kernel_name)
-    ax.set_xlabel("batch number")
-    ax.set_ylabel(kernel_name)
-    if save:
-        plt.savefig(figure_path+kernel_name+str(time())+'.'+FIGURE_EXTENSION)
-    return percs
-
-
-def random_targets(dframe, nplots, nseries, pool=None, **kwargs):
-    """ Make nplots figures that each display nseries samples from the data
-        in dframe
-
-        draws from pool or the index of the dframe if no  pool is given
-    """
-    if pool==None:
-        pool = dframe.index
-    targetcollection  = [np.random.permutation(pool)[:nseries]
-                         for i in range(nplots)]
-    [t.sort() for t in targetcollection]
-    data = [plot_kernel(dframe, t, KERNEL_NAME, FIGUREPATH, **kwargs)
-            for t in targetcollection]
-    return data
 
 def describe_vertex(df, lf, rf, v, plot=False, **kwargs):
     """ Gives a dataframe describing the vertex over time for quick inspection
@@ -135,28 +96,6 @@ def describe_vertex(df, lf, rf, v, plot=False, **kwargs):
     if plot:
         si.plot(subplots=True, **kwargs)
     return si
-
-def distribution_describe(df, colindex=None, plot=False,
-                          transform=None, **kwargs):
-    """Makes a simple description using pandas.describe
-
-    Arguments:
-    - `df`:
-    - `colindex`:
-    - `plot`:
-
-    """
-    if transform is None:
-        lf = df
-    else:
-        lf = transform(df)
-    if colindex == None:
-        colindex = df.columns
-    fr = lf[colindex]
-    desc = fr.describe().ix[[1, 2, 4, 5, 6]]
-    if plot:
-        desc.T.plot(**kwargs)
-    return desc
 
 def quantile_analysis(df, vertices, quants, timer=None, plot=False, **kwargs):
     """show how the quantiles of the distribution change over time
@@ -218,21 +157,6 @@ def run_bc_analysis(df, timer):
                       ascending=True,)#the ylabel should be similarity
     #smallfish = df[df[21] < 0.1][21].index
     # TODO: can we find anyone making a smooth climb to the top
-
-    timer.tic('density')
-    distribution_describe(df, df.columns[::10], transform=np.log,
-                          plot=True, title='changing distribution of log(bc)')
-    timer.toc('density')
-    # Tracing some vertices though time either random or seeded
-    lf = np.log(df)
-    if TARGETSV:
-        targets = random_targets(lf, 1, NTARGETS, pool=TARGETSV, save=True)[0].columns
-    else:
-        # sample from the set of vertices that have ever been above a high quantile
-        q=.500
-        qmedians = df.quantile(q)
-        topq = df[df > qmedians]
-        targets = random_targets(lf, 1, NTARGETS, pool=topq.index)[0].columns
 
     numzeros = (rf[rf<=1].count())
     #numzeros.plot(label='rank($\epsilon)$')
@@ -330,12 +254,6 @@ def exec_correlation_analysis(frame, selected_axes,  seq=None,
         scatter_matrix_topp(sorted_frame, selected_axes, 10)
     return (cseq)
 
-
-def load_mean(count):
-    df = load_batches('/home/users/jfairbanks/Projects/morerad/'+ KERNEL_NAME+".%d.csv",
-                      range(1,count), column=-1)
-    return df, df.mean()
-
 def main(df, t, timer=None):
     """
 
@@ -355,7 +273,8 @@ def main(df, t, timer=None):
     return True
 
 def get_me_data():
-    """
+    """ Uses global parameters KERNEL_NAME, INIT_SAMPLE, END_SAMPLE, STRIDE
+    DATA_DIR
 
     Arguments:
     - `store_name`:
@@ -380,12 +299,54 @@ def get_me_data():
             print(ex)
             print('we failed to write to hdf, is the hdf library installed?')
     return df
+
+def get_args():
+    """
+    This functions parses the options and returns them as an object
+    use args.name to access the value of argument <name>
+
+    add new options here
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-s', '--static',
+                        help='show static density estimates',
+                        action='store_true')
+
+    parser.add_argument('-t', '--temporal',
+                        help='show how statistics change over time',
+                        action='store_true')
+
+    parser.add_argument( '--traces',
+                         help='show traces for random vertices over time+derivative',
+                        action='store_true')
+
+    parser.add_argument('-d', '--derivative',
+                        help='show an analysis of the derivatives of the data',
+                        action='store_true')
+
+    parser.add_argument('-r', '--correlation',
+                        help='plot the function rho(t,k)',
+                        action='store_true')
+
+    parser.add_argument('--scatter',
+                        help='show scatter plot when doing correlation analysis.',
+                        action='store_true')
+
+    parser.add_argument('-x','--crosstabs',
+                        help='Create a latex table of the crosstabs',
+                        action='store_true')
+
+    args = parser.parse_args()
+    return args
+
 if __name__ == '__main__':
+    args = get_args()
     FIGUREPATH = u'./figures/'
     FIGURE_EXTENSION = u'png'
     DATA_DIR = u'../data/kernels/' #symlink this for portability
-    NSAMPLES = 1000 #number of batches
-    STRIDE = 10 #resolution of time in batches
+    NSAMPLES = 100 #number of batches
+    STRIDE = 1 #resolution of time in batches
     INIT_SAMPLE = 1
     END_SAMPLE = NSAMPLES #TODO subtract one from this
     TIMEINDEX = pd.Index(np.arange(INIT_SAMPLE,END_SAMPLE,STRIDE))
@@ -412,56 +373,104 @@ if __name__ == '__main__':
     df = get_me_data()
     print('data loaded')
     timer.toc('loading data')
-    t = 981
-    lf = np.log(df)
-    main_out = main(df, t,timer)
+    t = 98
+    lf = np.log1p(df)
+    timer.tic('differentiate')
+    diffframe = pd.DataFrame({t:(lf[t+STRIDE]-lf[t-STRIDE])/2
+                              for t in lf.columns[1:-1]})
+    timer.toc('differentiate')
+    print('Beginning the Analysis')
+    #main_out = main(df, t,timer)
     #show that we should use the median instead of the mean
-    print('comparing')
     #====Parametric Analysis================#
-    ##=======show density at fixed time t=============
-    #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
-    #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
-    print('filtering')
+
     ##===========Show the CDF for the statistic at a fixed time========#
-    print('starting CDF static')
-    filt = lf[lf>(lf.median())]
-    pf.cdf_plot_save(filt[[t-(10*STRIDE),t]])
-    print('ending CDF static')
+    if args.static:
+        ##=======show density at fixed time t=============
+        #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
+        #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
+        print('starting CDF static')
+        timer.tic('static')
+        filt = lf[lf>(lf.median())]
+        pf.cdf_plot_save(filt[[t-(STRIDE),t]])
+        print('ending CDF static')
+        timer.toc('static')
+
+    if args.traces:
+        timer.tic('traces')
+        q=.500
+        qmedians = df.quantile(q)
+        topq = df[df > qmedians].dropna()
+        pf.bc_traces(lf,diffframe, topq)
+        timer.toc('traces')
+
+    if args.temporal:
+        #show how the distribution changes over time
+        print('beginning temporal analysis')
+        print('we make two plots here one for all vertices as they show up')
+        print('and one for only the initial vertex set')
+
+        timer.tic('temporal')
+        temporal_kwargs = {"title":"Distribution for all vertices"}
+        tfilt = lf[lf>0]
+        plg.distribution_describe(tfilt, colindex=None, plot=True,
+                              transform=None, **temporal_kwargs)
+        temporal_kwargs['title'] = "Distribution for initial vertex set"
+        plg.distribution_describe(tfilt.dropna(), colindex=None, plot=True,
+                              transform=None, **temporal_kwargs)
+        timer.toc('temporal')
+        print('ending temporal analysis')
 
     #======Analysis of Derivatives==============
+    if args.derivative:
     #filt[t].hist(bins=BINCOUNT,normed=True)
-    print('starting derivative analysis')
-    frame = df#[df>df.median()]
-    diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2 #use a centered derivative
-    seq = np.log(diffs[(diffs)>0].dropna())
-    seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
-    diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
-    ##======Show the CDF for the diffs separating positive and negative====
-    pf.cdf_plot_save_diffs(diffr,)
-    ka.rank_sums_test(seq, seq_neg)
-    ksp = stats.kstest(seq, 'norm')
-    print(ksp)
-    ##=====Show the density estimates for pos and neg separately
-    show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
-    #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
-    #                     fitter=stats.norm, name='pos-trimmed-norm')
-    show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
-    #seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
-    #not useful because most of the vertices lose BC each round
-    #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
-    print('ending derivative analysis')
+        print('starting derivative analysis')
+        timer.tic('derivative')
+        frame = df#[df>df.median()]
+        diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2 #use a centered derivative
+        seq = np.log(diffs[(diffs)>0].dropna())
+        seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
+        diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
+        ##======Show the CDF for the diffs separating positive and negative====
+        pf.cdf_plot_save_diffs(diffr,)
+        ka.rank_sums_test(seq, seq_neg)
+        ksp = stats.kstest(seq, 'norm')
+        print(ksp)
+        ##=====Show the density estimates for pos and neg separately
+        show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
+        #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
+        #                     fitter=stats.norm, name='pos-trimmed-norm')
+        show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
+        #seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
+        #not useful because most of the vertices lose BC each round
+        #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
+        timer.toc('derivative')
 
-    #show how the mean of the distribution changes over time
+        print('ending derivative analysis')
+
 
 
     #======Correlation Analysis===========#
-    print('starting correlation analysis')
-    corr_plot(df[[801,811,901]])
-    tmpframe = df[df.columns[10::2]]
-    #pearson is linear and spearman in any monotonic correlation
-    ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
-    #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
-    print('ending correlation analysis')
+    if args.correlation:
+        print('starting correlation analysis')
+        timer.tic('correlation')
+        tmpframe = df[df.columns[10::2]]
+        #pearson is linear and spearman in any monotonic correlation
+        ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
+        #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
+        timer.toc('correlation')
+        print('ending correlation analysis')
+    if args.scatter:
+        timer.tic('scatter')
+        print('starting scatter plot')
+        corr_plot(df[[801,811,901]])
+        timer.toc('scatter')
+        print('ending scatter plot')
 
     #=====Crosstabs for conditional probability
-    pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
+    if args.crosstabs:
+        timer.tic('crosstabs')
+        pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
+        timer.toc('crosstabs')
+    print(timer)
+    print('\n\tDONE')

@@ -10,14 +10,86 @@ import scipy.stats as stats
 import numpy as np
 
 BINCOUNT = 50
+# #Traces
+# ============================================
+def plot_kernel_traces(dframe, rows, **kwargs):
+    """ Makes a plot  of the kernel values for the rows over time
+
+    Arguments:
+    - `dframe`: the  DataFrame of kernel values at time steps in the columns and vertices as rows
+    - `rows`: the set of vertices to display
+    - `**kwargs`: matplotlib keyword args passed to plot
+
+    Returns:
+    - `percs`: the kernel values restricted to the rows transposed for plotting
+    """
+    # TODO: normalize
+    percs =  dframe.ix[rows].T
+    ax = percs.plot(**kwargs)
+    return percs
+
+
+def random_targets_trace(dframe, nplots, nseries, pool=None, **kwargs):
+    """ Make nplots figures that each display nseries samples from the data
+        in dframe
+
+        draws from pool or the index of the dframe if no  pool is given
+    """
+    if pool==None:
+        pool = dframe.index
+    targetcollection  = [np.random.permutation(pool)[:nseries]
+                         for i in range(nplots)]
+    [t.sort() for t in targetcollection]
+    data = [plot_kernel_traces(dframe, t, **kwargs)
+            for t in targetcollection]
+    return data
+
 
 def show_PCA(df):
     pca = mlab.PCA(df)
     plt.plot(pca.Y)
     return pca
 
+# # Density Estimation
+# ================================================================
+
+# ## Nonparametric
+# ----------------
+def distribution_describe(df, colindex=None, plot=False,
+                          transform=None, **kwargs):
+    """Makes a simple description using pandas.describe
+    If df is DataFrame with vertices in rows and time steps in columns
+    then this will give a rough picture of how the distribution is changing over
+    time.
+
+    Arguments:
+    - `df`:
+    - `colindex`:
+    - `plot`:
+
+    Returns:
+    - `desc`: the description frame
+
+    Note:
+    You can select elements from the description frame that is return if you
+    would rather manipulate the data by hand.
+    """
+    if transform is None:
+        lf = df
+    else:
+        lf = transform(df)
+    if colindex == None:
+        colindex = df.columns
+    fr = lf[colindex]
+    desc = fr.describe().ix[[1, 2, 4, 5, 6]]
+    if plot:
+        desc.T.plot(**kwargs)
+    return desc
+
+# ## Parametric
+# -------------
 def cdf_plot(df, fitter=stats.norm,
-              cdf=True, colors = ['b','g','r','c','m','y','k','w'],):
+             cdf=True, colors = ['b','g','r','c','m','y','k','w'],):
     """
 
     Arguments:
@@ -75,6 +147,9 @@ def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
         pdf = pd.Series(rv.pdf(domain)*scaling, index=domain, name='pdf')
         pdf.plot(color='r')
 
+
+# # Correlation
+#======================================================
 def correlation_changes_over_time(df, times, log=True,
                                   condition=np.median, color1='b', color2='r'
                                   ):

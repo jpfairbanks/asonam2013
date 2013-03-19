@@ -21,7 +21,65 @@ def count_change_directions(df, eps=None):
         print('\nthresholding not implemented yet. We are using threshold of 0')
     return np.sign(df.T.diff().T).apply(pd.value_counts).T
 
+def rhotk(df,sample_times, display_starts, method='pearson'):
+    """ compute the correlation going forward. This corresponds to the
+    rho(t,t+k) for t+k in sample_times. We only return the frame containing
+    columns for each t in display_starts.
 
+    Arguments:
+    - `df`: the data from must contain sample_times as columns
+    - `sample_times`: the points in time at which to compute the correlations
+    - `display_starts`: must be a subset of sample_times
+    - `method`: pearson, spearman, kendall. pearson is the fastest and default
+
+    Returns:
+    -`rhos`: a dataframe containing a column for each starting point and the
+             rows are all t+k in sample_times. You can call plot on this to
+             visualize it quickly
+
+    Note:
+    pearson correlation is the fastest but only captures linear correlation.
+    Spearman's correlation is a rank correlation and so is for any monotonic
+    relationship.
+    """
+    rf = df[sample_times].corr(method=method)
+    rhos = pd.DataFrame(np.tril(rf),
+                        index=rf.index,columns=rf.columns)[display_starts]
+    rhos = rhos.replace(0,np.nan)
+    return rhos
+
+# # Hypothesis Testing
+# ====================
+
+# TODO: use this
+def rank_sums_test(treatment1, treatment2):
+    """ See if the distribution of treatmen1 is different than
+    the distribution treatment2
+
+    Arguments:
+    - `treatment1`:
+    - `treatment2`:
+    """
+    z_stat, p_val = stats.ranksums(treatment1, treatment2)
+    print "Mann-Whitney-Wilcoxon RankSum P for treatments 1 and 2 =", p_val
+    return z_stat, p_val
+
+# # Dimmensionality Reduction
+# =========================
+
+def pca(df):
+    """
+
+    Arguments:
+    - `df`:
+    """
+    pika = mlab.PCA(df.dropna())
+    pj = np.array([pika.project(df.T[r]) for r in df.T])
+    pjf = pd.DataFrame(pj)
+    return pjf
+
+# # Comparing Rank and Value
+#   ============================
 def crosstabs(value_series, rank_series, epsilon):
     """ uses a +1 to avoid dividing by zero later
 
@@ -66,54 +124,3 @@ def exec_crosstabs(df,timestamps,epsilon):
     print(marg_vals)
     marg_ranks = (ct+0.0)/ct.sum(axis=0)
     return ct, marg_vals, marg_ranks
-
-def rhotk(df,sample_times, display_starts, method='pearson'):
-    """ compute the correlation going forward. This corresponds to the
-    rho(t,t+k) for t+k in sample_times. We only return the frame containing
-    columns for each t in display_starts.
-
-    Arguments:
-    - `df`: the data from must contain sample_times as columns
-    - `sample_times`: the points in time at which to compute the correlations
-    - `display_starts`: must be a subset of sample_times
-    - `method`: pearson, spearman, kendall. pearson is the fastest and default
-
-    Returns:
-    -`rhos`: a dataframe containing a column for each starting point and the
-             rows are all t+k in sample_times. You can call plot on this to
-             visualize it quickly
-
-    Note:
-    pearson correlation is the fastest but only captures linear correlation.
-    Spearman's correlation is a rank correlation and so is for any monotonic
-    relationship.
-    """
-    rf = df[sample_times].corr(method=method)
-    rhos = pd.DataFrame(np.tril(rf),
-                        index=rf.index,columns=rf.columns)[display_starts]
-    rhos = rhos.replace(0,np.nan)
-    return rhos
-
-# TODO: use this
-def rank_sums_test(treatment1, treatment2):
-    """ See if the distribution of treatmen1 is different than
-    the distribution treatment2
-
-    Arguments:
-    - `treatment1`:
-    - `treatment2`:
-    """
-    z_stat, p_val = stats.ranksums(treatment1, treatment2)
-    print "Mann-Whitney-Wilcoxon RankSum P for treatments 1 and 2 =", p_val
-    return z_stat, p_val
-
-def pca(df):
-    """
-
-    Arguments:
-    - `df`:
-    """
-    pika = mlab.PCA(df.dropna())
-    pj = np.array([pika.project(df.T[r]) for r in df.T])
-    pjf = pd.DataFrame(pj)
-    return pjf

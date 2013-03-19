@@ -12,6 +12,7 @@ reused and the specialized in this module.
 
 
 """
+from time import time as time
 import pandas as pd
 import matplotlib
 #if running without a display use this for generating to files
@@ -19,10 +20,47 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
+import plotting as plg
 from plotting import *
 import kernel_analysis as ka
 FIGUREPATH = u'./figures/'
 FIGURE_EXTENSION = u'png'
+
+def bc_traces(lf, diffframe, vpool):
+    """
+    Make and save a figure that shows the trace of 6 vertices over time.
+    This is like a seismograph for BC.
+
+    Writes out a plot using the current time to prevent over writing.
+    Arguments:
+    - `lf`: the values of the statistic
+    - `diffframe`: the derivative frame
+    - `topq`: the vertices to sample uniformly at random from
+
+    Returns:
+    - `targets`: the vertices that were selected.
+    """
+
+    kernel_name = 'betweenness centrality'
+    traces_kwargs = {'title':"Traces in $\log(BC)$",}
+    targets = plg.random_targets_trace(lf, 1, 6,
+                                 pool=vpool.index, **traces_kwargs)[0].columns
+    fig = plt.gcf()
+    ax = fig.axes[0]
+    ax.set_xlabel("batch number")
+    ax.set_ylabel(kernel_name)
+    plt.savefig(FIGUREPATH+'bc'+str(time())+'.'+FIGURE_EXTENSION)
+    print(targets)
+    traces_kwargs['title'] = "Traces in $d\log(BC)/dt$"
+    plg.random_targets_trace(diffframe, 1, 6,
+                       pool=targets, **traces_kwargs)
+    fig = plt.gcf()
+    ax = fig.axes[0]
+    ax.set_title(traces_kwargs['title'])
+    ax.set_xlabel("batch number")
+    ax.set_ylabel(kernel_name)
+    plt.savefig(FIGUREPATH+'bc'+str(time())+'.'+FIGURE_EXTENSION)
+    return targets
 
 def show_histogram_logbc(ls, t, median=False, fitter=stats.expon):
     """ Histogram some data and show a best fit distribution on top.
