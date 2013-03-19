@@ -472,5 +472,6 @@ if __name__ == '__main__':
         timer.tic('crosstabs')
         pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
         timer.toc('crosstabs')
-    print(timer)
+    print(timer.ends)
+    print('total time: %f' % sum(timer.ends.values()))
     print('\n\tDONE')
