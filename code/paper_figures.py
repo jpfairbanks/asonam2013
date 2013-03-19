@@ -162,7 +162,7 @@ def corr_plot(df):
     """
     times = df.columns
     frame = df
-    FILENAME = 'figures/correlation-scatter.png'
+    FILENAME = 'figures/correlation-scatter.%s' % FIGURE_EXTENSION
     titles = ['Correlation of Betweenness Centrality over time', '','']
     xlabels = ['logBC after batch %d']*2
     ylabels = ['logBC %d']*2
@@ -192,7 +192,9 @@ def corr_model(df, degree=1, method='pearson'):
     -`method`: correlation method
 
     """
-    FILENAME = 'figures/%s-correlation-deg%d-model.png' % (method, degree)
+    FILENAME = 'figures/%s-correlation-deg%d-model%s' % (method,
+                                                         degree,
+                                                         FIGURE_EXTENSION)
     portion = len(df.columns)/2
     rhoframe = ka.rhotk(df, df.columns, df.columns[:portion:portion/4],
                                method=method)
