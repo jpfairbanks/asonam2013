@@ -2,9 +2,13 @@
 into visualizations for the paper
 """
 from __future__ import print_function
+from multiprocessing import Process
+#from threading import Thread as Process
 import argparse
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from time import time as time
@@ -342,6 +346,7 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
+    PROCESSES = dict()
     FIGUREPATH = u'./figures/'
     FIGURE_EXTENSION = u'png'
     DATA_DIR = u'../data/kernels/' #symlink this for portability
@@ -392,7 +397,9 @@ if __name__ == '__main__':
         print('starting CDF static')
         timer.tic('static')
         filt = lf[lf>(lf.median())]
-        pf.cdf_plot_save(filt[[t-(STRIDE),t]])
+        staticf = lambda t: pf.cdf_plot_save(filt[[t-(STRIDE),t]])
+        PROCESSES['static'] = Process(target = staticf, args=(t,))
+        PROCESSES['static'].start()
         print('ending CDF static')
         timer.toc('static')
 
@@ -401,8 +408,33 @@ if __name__ == '__main__':
         q=.500
         qmedians = df.quantile(q)
         topq = df[df > qmedians].dropna()
-        pf.bc_traces(lf,diffframe, topq)
+        tracef = lambda : pf.bc_traces(lf,diffframe, topq)
+        PROCESSES['traces'] = Process(target=tracef)
+        PROCESSES['traces'].start()
         timer.toc('traces')
+
+    #======Correlation Analysis===========#
+    if args.correlation:
+        print('starting correlation analysis')
+        timer.tic('correlation')
+        tmpframe = df[df.columns[10::2]]
+        #pearson is linear and spearman in any monotonic correlation
+        PROCESSES['correlation'] = Process(target=corr_model,
+                                           args=(tmpframe,1,'pearson'))
+        PROCESSES['correlation'].start()
+        #ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
+        #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
+        timer.toc('correlation')
+        print('ending correlation analysis')
+    if args.scatter:
+        timer.tic('scatter')
+        print('starting scatter plot')
+        scatter_frame = df[[t-2*STRIDE, t-STRIDE, t]]
+        PROCESSES['scatter'] = Process(target=corr_plot, args=(scatter_frame,))
+        PROCESSES['scatter'].start()
+        #corr_plot(scatter_frame)
+        timer.toc('scatter')
+        print('ending scatter plot')
 
     if args.temporal:
         #show how the distribution changes over time
@@ -427,7 +459,7 @@ if __name__ == '__main__':
         print('starting derivative analysis')
         timer.tic('derivative')
         frame = df#[df>df.median()]
-        diffs = (frame[t+STRIDE] - frame[t-STRIDE])/2 #use a centered derivative
+        diffs = diffframe[t]
         seq = np.log(diffs[(diffs)>0].dropna())
         seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
         diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
@@ -441,37 +473,18 @@ if __name__ == '__main__':
         #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
         #                     fitter=stats.norm, name='pos-trimmed-norm')
         show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
-        #seq_combined = np.log(diffs[diffs!=0].abs()).dropna()
-        #not useful because most of the vertices lose BC each round
-        #show_histogram_diffs(seq_combined,t, fitter=stats.beta, name='neg-beta')
         timer.toc('derivative')
-
         print('ending derivative analysis')
 
-
-
-    #======Correlation Analysis===========#
-    if args.correlation:
-        print('starting correlation analysis')
-        timer.tic('correlation')
-        tmpframe = df[df.columns[10::2]]
-        #pearson is linear and spearman in any monotonic correlation
-        ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
-        #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
-        timer.toc('correlation')
-        print('ending correlation analysis')
-    if args.scatter:
-        timer.tic('scatter')
-        print('starting scatter plot')
-        corr_plot(df[[801,811,901]])
-        timer.toc('scatter')
-        print('ending scatter plot')
 
     #=====Crosstabs for conditional probability
     if args.crosstabs:
         timer.tic('crosstabs')
         pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
         timer.toc('crosstabs')
+    timer.tic('joining')
+    [p.join() for p in PROCESSES.values()]
+    timer.toc('joining')
     print(timer.ends)
     print('total time: %f' % sum(timer.ends.values()))
     print('\n\tDONE')
