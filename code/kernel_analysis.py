@@ -22,7 +22,7 @@ def summarize_vertices(df, pos_filter=False, whiten=False):
     We don't want to include vertices that have a 0 for every time step. They will only skew our 
     statistics.
     """
-    sumf = pd.DataFrame({'mu':lf.mean(axis=1), 'sigma':lf.std(axis=1),
+    sumf = pd.DataFrame({'mu':df.mean(axis=1), 'sigma':df.std(axis=1),
 	                 #'kurt':lf.kurt(axis=1),
 			 }).dropna()
     if pos_filter:
