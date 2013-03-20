@@ -290,6 +290,7 @@ def get_me_data():
     store_name, frame_name = format_hdf_names(DATA_DIR,
                                               KERNEL_NAME,
                                               INIT_SAMPLE, END_SAMPLE, STRIDE)
+    names_file = DATA_DIR+('betweenness_centrality.%d.csv'%END_SAMPLE)
     #get the data no matter what it takes, save it to hdf5 for future speed
     try:
         df = load_hdf_table(store_name, frame_name)
@@ -302,7 +303,13 @@ def get_me_data():
         except Exception as ex:
             print(ex)
             print('we failed to write to hdf, is the hdf library installed?')
-    return df
+    try:
+        namesf = pd.read_csv(names_file, header=None)
+        names = namesf[[0,1]].set_index(0)
+    except:
+        print("we failed to read names: does file %s exist?" % namesfile)
+        names = None
+    return df, names
 
 def get_args():
     """
@@ -313,6 +320,9 @@ def get_args():
     """
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-u', '--summary',
+                        help='summarize each vertex accross time',
+                        action='store_true')
     parser.add_argument('-s', '--static',
                         help='show static density estimates',
                         action='store_true')
@@ -349,7 +359,8 @@ if __name__ == '__main__':
     PROCESSES = dict()
     FIGUREPATH = u'./figures/'
     FIGURE_EXTENSION = u'png'
-    DATA_DIR = u'../data/kernels/' #symlink this for portability
+    DATA_DIR         = u'../data/kernels/' #symlink this for portability
+    POST_PROCESS_DIR = u'../data/post_process/'#symlink this for portability
     NSAMPLES = 100 #number of batches
     STRIDE = 1 #resolution of time in batches
     INIT_SAMPLE = 1
@@ -375,11 +386,23 @@ if __name__ == '__main__':
 
     timer.tic('loading data')
     # figure out where data should be found
-    df = get_me_data()
+    df, names = get_me_data()
     print('data loaded')
     timer.toc('loading data')
     t = 98
     lf = np.log1p(df)
+    if args.summary:
+        timer.tic('summary')
+        print("summarizing vertices")
+        whitf = ka.summarize_vertices(lf, pos_filter=True, whiten=True)
+	whitf = whitf.join(names)
+        whitf.to_csv(POST_PROCESS_DIR+'whitened_BC_stats.csv')
+        covm  = whitf.cov()
+        print(covm)
+        print('a sample of the vertices as shown by the mean and std of their time series')
+        fig, ax = plg.scatter_vertices(whitf, alpha=.3)
+        timer.toc('summary')
+
     timer.tic('differentiate')
     diffframe = pd.DataFrame({t:(lf[t+STRIDE]-lf[t-STRIDE])/2
                               for t in lf.columns[1:-1]})
@@ -485,6 +508,7 @@ if __name__ == '__main__':
     timer.tic('joining')
     [p.join() for p in PROCESSES.values()]
     timer.toc('joining')
+    #TODO: Implement Isotonic regreesion on the values
     print(timer.ends)
     print('total time: %f' % sum(timer.ends.values()))
     print('\n\tDONE')
