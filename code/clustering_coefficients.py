@@ -86,6 +86,9 @@ def get_args():
                         action='store_true')
     parser.add_argument('-t', '--temporal', help='show how statistics change over time',
                         action='store_true')
+    parser.add_argument('-u', '--summary',
+                        help='summarize each vertex accross time, write into the post_process dir',
+                        action='store_true')
     parser.add_argument('-d', '--derivative', help='show an analysis of the derivatives of the data',
                         action='store_true')
     parser.add_argument('-r', '--correlation', help='plot the function rho(t,k)',
@@ -106,13 +109,13 @@ if __name__ == '__main__':
     trif, ccf, namesf, = load_data(DATA_DIR,
                                    POST_PROC_DIR, TIMEINDEX, t)
 
+    logtrif = np.log1p(trif)
     #degf = kio.load_csv_frame(DATA_DIRm 'degree',
     #'degree.1.100.10', TIMEINDEX)
 
     # Static analyses
     if args.static:
         #density estimation static of number of triangles
-        logtrif = np.log1p(trif)
         plg.cdf_plot(logtrif[[t]], fitter=stats.expon)
         #density estimation of CC
         plg.cdf_plot(ccf[[t]], fitter=stats.gamma)
@@ -123,6 +126,19 @@ if __name__ == '__main__':
         filtitle = 'For vertices with at least one triangle'
         save_globalcc_over_time(ccf[ccf>0], title=filtitle)
         save_globalcc_over_time(ccf, title='All vertices')
+
+    #summarize vertices over time
+    if args.summary:
+        #timer.tic('summary')
+        print("summarizing vertices")
+        whitf = ka.summarize_vertices(logtrif, pos_filter=True, whiten=True)
+	whitf = whitf.join(namesf)
+        whitf.to_csv(POST_PROC_DIR+'whitened_tri_stats.csv')
+        covm  = whitf.cov()
+        print(covm)
+        print('a sample of the vertices as shown by the mean and std of their time series')
+        #fig, ax = plg.scatter_vertices(whitf, alpha=.3)
+        #timer.toc('summary')
 
     if args.correlation:
     # Correlation analysis
