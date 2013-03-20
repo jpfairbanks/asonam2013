@@ -210,3 +210,16 @@ def polyfit_plot(frame, degree=1, residuals=True,):
         resids = (modelframe-frame)
         rax = resids.plot(kind='bar')
     return ax
+
+# # Putting vertices into Feature Space
+def scatter_vertices(df, alpha=.3):
+    """ make a scatter plot whose data elements are vertices and whos axes
+    are summary statistics of kernel values over time.
+    See kernel_analysis.summararize_vertices for a description of arguments.
+    """
+    plt.scatter(df[df.columns[0]], df[df.columns[1]], alpha=alpha)
+    fig = plt.gcf()
+    ax = fig.axes[0]
+    ax.set_xlabel(df.columns[0])
+    ax.set_ylabel(df.columns[1])
+    return fig, ax
