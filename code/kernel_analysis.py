@@ -8,6 +8,33 @@ import matplotlib.mlab as mlab
 #TODO: add an analysis for clustering vertices based on there kernel features
 #TODO: try and find journalists based on this
 #TODO: PCA the deg, cc, bc data for some batch
+def summarize_vertices(df, pos_filter=False, whiten=False):
+    """ Compute the mean and std deviation for each vertex accross time and optionally whiten it.
+    That is to subtract off the mean and divide by the standard deviation
+    Arguments:
+    - `df`: the DataFrame columns are time rows are vertices
+    - `pos_filter`: only use vertices with positive mean
+    - `whiten`: boolean defaults to false
+    Returns:
+    - `whitf`: columns are 'mu', 'sigma' rows are vertices
+
+    Note: pos_filter is useful for things graph statistics that return only nonnegative values.
+    We don't want to include vertices that have a 0 for every time step. They will only skew our 
+    statistics.
+    """
+    sumf = pd.DataFrame({'mu':lf.mean(axis=1), 'sigma':lf.std(axis=1),
+	                 #'kurt':lf.kurt(axis=1),
+			 }).dropna()
+    if pos_filter:
+        posf  = sumf[sumf['mu']>0]
+    else:
+        posf  = sumf
+    if whiten:
+        centf = posf-posf.mean()
+        whitf = centf/centf.std()
+    else:
+        whitf = posf
+    return whitf
 
 def count_change_directions(df, eps=None):
     """Count the number of vertices that increase, stay constant or decrease
