@@ -1,3 +1,5 @@
+echo "This test does not check correctness it is just to make sure that the arguments run"
+
 ~/.local/bin/ipython ipython -c "run betweenness_centrality.py -h" && echo "passed help"
 ~/.local/bin/ipython ipython -c "run betweenness_centrality.py -s" && echo "passed static"
 ~/.local/bin/ipython ipython -c "run betweenness_centrality.py -t" && echo "passed temporal"
