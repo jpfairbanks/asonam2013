@@ -356,7 +356,6 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-    PROCESSES = dict()
     FIGUREPATH = u'./figures/'
     FIGURE_EXTENSION = u'png'
     DATA_DIR         = u'../data/kernels/' #symlink this for portability
@@ -421,8 +420,7 @@ if __name__ == '__main__':
         timer.tic('static')
         filt = lf[lf>(lf.median())]
         staticf = lambda t: pf.cdf_plot_save(filt[[t-(STRIDE),t]])
-        PROCESSES['static'] = Process(target = staticf, args=(t,))
-        PROCESSES['static'].start()
+        staticf(t)
         print('ending CDF static')
         timer.toc('static')
 
@@ -432,8 +430,7 @@ if __name__ == '__main__':
         qmedians = df.quantile(q)
         topq = df[df > qmedians].dropna()
         tracef = lambda : pf.bc_traces(lf,diffframe, topq)
-        PROCESSES['traces'] = Process(target=tracef)
-        PROCESSES['traces'].start()
+        tracef()
         timer.toc('traces')
 
     #======Correlation Analysis===========#
@@ -442,9 +439,7 @@ if __name__ == '__main__':
         timer.tic('correlation')
         tmpframe = df[df.columns[10::2]]
         #pearson is linear and spearman in any monotonic correlation
-        PROCESSES['correlation'] = Process(target=corr_model,
-                                           args=(tmpframe,1,'pearson'))
-        PROCESSES['correlation'].start()
+        corr_model(tmpframe,1,'pearson')
         #ax, rhoframe = corr_model(tmpframe, degree=1, method='pearson')
         #ax, rhoframe = corr_model(tmpframe, degree=2, method='spearman')
         timer.toc('correlation')
@@ -453,8 +448,7 @@ if __name__ == '__main__':
         timer.tic('scatter')
         print('starting scatter plot')
         scatter_frame = df[[t-2*STRIDE, t-STRIDE, t]]
-        PROCESSES['scatter'] = Process(target=corr_plot, args=(scatter_frame,))
-        PROCESSES['scatter'].start()
+        corr_plot(scatter_frame)
         #corr_plot(scatter_frame)
         timer.toc('scatter')
         print('ending scatter plot')
@@ -506,10 +500,7 @@ if __name__ == '__main__':
         timer.tic('crosstabs')
         pf.save_crosstabs(df, t, STRIDE=STRIDE, eps=1)
         timer.toc('crosstabs')
-    timer.tic('joining')
-    [p.join() for p in PROCESSES.values()]
-    timer.toc('joining')
-    #TODO: Implement Isotonic regreesion on the values
+    #TODO: Implement Isotonic regresion on the values
     print(timer.ends)
     print('total time: %f' % sum(timer.ends.values()))
     print('\n\tDONE')
