@@ -41,7 +41,7 @@ def model_func():
     Calling scatter plot on the return value will show some patterns in the data.
     """
     nzd = diffframe[diffframe!=0]
-    mframe = ka.summarize_verticesmany(nzd)
+    mframe = ka.summarize_vertices_many(nzd)
     return mframe
 
 # Plotting
@@ -194,7 +194,8 @@ if __name__ == '__main__':
 
     if args.model:
         mframe = model_func()
-        pd.scatter_matrix(mframe, alpha=.3,color='g')
+        subframe = mframe[['logcount', 'sqmean','var']]
+        pd.scatter_matrix(subframe, alpha=.3,color='g')
 
     inframe = pd.DataFrame({'tri': trif[t],
                             'cc' : ccf[t]})
