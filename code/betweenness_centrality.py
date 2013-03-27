@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from time import time as time
@@ -483,19 +483,20 @@ if __name__ == '__main__':
         timer.tic('derivative')
         frame = df#[df>df.median()]
         diffs = diffframe[t]
-        seq = np.log(diffs[(diffs)>0].dropna())
-        seq_neg = np.log(diffs[(diffs)<0].abs().dropna())
+        seq = (diffs[(diffs)>0].dropna())
+        seq_neg = (diffs[(diffs)<0].abs().dropna())
         diffr = pd.DataFrame({'pos':seq, 'neg':seq_neg})
+        diffr = np.log1p(diffr)
         ##======Show the CDF for the diffs separating positive and negative====
         pf.cdf_plot_save_diffs(diffr,)
         ka.rank_sums_test(seq, seq_neg)
         ksp = stats.kstest(seq, 'norm')
         print(ksp)
         ##=====Show the density estimates for pos and neg separately
-        show_histogram_diffs(seq,t, fitter=stats.beta, name='pos-beta')
+        show_histogram_diffs(diffr.pos,t, fitter=stats.beta, name='pos-beta')
         #show_histogram_diffs(pd.Series(stats.trimboth(seq.order(),.025,)), t,
         #                     fitter=stats.norm, name='pos-trimmed-norm')
-        show_histogram_diffs(seq_neg,t, fitter=stats.beta, name='neg-beta')
+        show_histogram_diffs(diffr.neg,t, fitter=stats.beta, name='neg-beta')
         timer.toc('derivative')
         print('ending derivative analysis')
 
