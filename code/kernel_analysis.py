@@ -36,17 +36,48 @@ def summarize_vertices(df, pos_filter=False, whiten=False):
         whitf = posf
     return whitf
 
+def deriv(frame):
+    """Return the centered derivative of the frame.
+
+    Arguments:
+    - `df`: the frame you care about columns are time rows are vertices
+
+    """
+    ds = dict()
+    indices = range(1,len(frame.columns)-1)
+    #print(indices)
+    #print(frame.columns)
+    for i in indices:
+        ds[i] = (frame[frame.columns[i+1]] - frame[frame.columns[i-1]])/2.0
+    return pd.DataFrame(ds)
+
+def flatten(frame):
+    """Flattens a frame into a big sequence.
+    does not make a hierarchical index or anything.
+    You can call hist on the result in order to see what all of the data in a frame look like.
+    This came about because I was trying to histogram a distribution and wanted to consider
+    the data from all time steps together.
+
+    Arguments:
+    - `frame`: A dataframe that has columns of time steps and rows of entities
+    - `returns`: The flattened series of all data in one pool
+
+    """
+    ser = pd.concat(diffframe[i] for i in diffframe.columns)
+    return ser
+
+
 def count_change_directions(df, eps=None):
     """Count the number of vertices that increase, stay constant or decrease
     df is expected to be items in the rows and time steps in the columns
 
     Arguments:
-    - `df`: the frame you care about columns are time rows are vertices
+    - `df`: the derivative of the frame you care about columns are time rows are vertices
     - `eps`: threshold to use, not implemented yet
     """
     if eps is not None:
         print('\nthresholding not implemented yet. We are using threshold of 0')
-    return np.sign(df.T.diff().T).apply(pd.value_counts).T
+    return np.sign(df).apply(pd.value_counts).T
 
 def rhotk(df,sample_times, display_starts, method='pearson'):
     """ compute the correlation going forward. This corresponds to the
