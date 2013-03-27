@@ -36,6 +36,13 @@ def load_data(data_dir, post_proc_dir, timeindex, timepoint):
     names = namesf[[0,1]].set_index(0)
     return trif, ccf, namesf
 # ========
+def model_func():
+    """ summarize each vertex into a NV x Properties frame
+    Calling scatter plot on the return value will show some patterns in the data.
+    """
+    nzd = diffframe[diffframe!=0]
+    mframe = ka.summarize_verticesmany(nzd)
+    return mframe
 
 # Plotting
 # ========
@@ -107,6 +114,8 @@ def get_args():
                         action='store_true')
     parser.add_argument('-d', '--derivative', help='show an analysis of the derivatives of the data',
                         action='store_true')
+    parser.add_argument('-m', '--model', help='extract some features from the derivative of CC and plot them',
+                        action='store_true')
     parser.add_argument('-r', '--correlation', help='plot the function rho(t,k)',
                         action='store_true')
     parser.add_argument('--scatter',
@@ -165,12 +174,12 @@ if __name__ == '__main__':
         print(rhoframe)
         rhoframe.plot(title="Rho_cc(t,k)")
     # Differences Analysis
+    diffframe = ka.deriv(ccf)
     if args.derivative:
         #how many vertices change their CC in each direction over time
         change_frame = ka.count_change_directions(ka.deriv(ccf))
         count_changes_plot(change_frame)
         diffst = (ccf[t]-ccf[t-2])/2
-        diffframe = ka.deriv(ccf)
         #plt.figure()
         #diffframe[diffframe>0].mean(axis=0).plot()
         #diffframe[diffframe<0].mean(axis=0).plot()
@@ -182,6 +191,10 @@ if __name__ == '__main__':
         fig, axes = plt.subplots(1,1,1)
         plg.show_histogram_parameteric_fit(nzdiffst, t-1,)
         plg.cdf_plot(pd.DataFrame(nzdiffst))
+
+    if args.model:
+        mframe = model_func()
+        pd.scatter_matrix(mframe, alpha=.3,color='g')
 
     inframe = pd.DataFrame({'tri': trif[t],
                             'cc' : ccf[t]})
