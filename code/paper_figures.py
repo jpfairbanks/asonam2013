@@ -4,14 +4,14 @@ goal is to run a script that will generate all of the figures with titles,
 captions, and axis labels. This will allow the maximum agility in publication.
 
 These functions should just call functions from plotting.py with the propoer
-arguments for the paper. Then annotate the resulting plots and save them to disk
+arguments for the paper. Then they annotate the resulting plots and save them to disk
 with the filenames that are in the latex document for includegraphics.
 
 Any function that makes a plot should be in the plotting module written to be
 reused and the specialized in this module.
 
-
 """
+
 from time import time as time
 import pandas as pd
 import matplotlib
@@ -90,7 +90,7 @@ def cdf_plot_save(df):
     """
     kernel_name='logBC'
     fig, ax = cdf_plot(df, fitter=stats.expon,)
-    ax.legend()
+    ax.legend(loc='best')
     ax.set_title('CDF of %s(v)'%kernel_name)
     ax.set_xlabel('%s(v)'%kernel_name)
     ax.set_ylabel('CDF(%s(v))'%kernel_name)
@@ -103,7 +103,7 @@ def cdf_plot_save_diffs(df):
     """
     kernel_name='log(|dBC/dt|)'
     fig, ax = cdf_plot(df, fitter=stats.beta,)
-    ax.legend()
+    ax.legend(loc='best')
     ax.set_title('CDF of %s(v)'%kernel_name)
     ax.set_xlabel('%s(v)'%kernel_name)
     ax.set_ylabel('CDF(%s(v))'%kernel_name)
