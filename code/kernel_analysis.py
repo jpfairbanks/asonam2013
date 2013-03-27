@@ -8,6 +8,24 @@ import matplotlib.mlab as mlab
 #TODO: add an analysis for clustering vertices based on there kernel features
 #TODO: try and find journalists based on this
 #TODO: PCA the deg, cc, bc data for some batch
+def summarize_vertices_many(df):
+    """ Try and extract some features from the data by summarizing each vertex 
+    according to some reduction.
+
+    Arguments:
+    - `df`: Vertices by timesteps data frame
+    
+    Returns:
+    - `mframe`: Vertices by features dataframe
+
+    """
+    dmag, dcnt  = np.square(df).sum(axis=1), np.log1p(df.count(axis=1))
+    dsqvar, dvar = np.square(df).var(axis=1), df.var(axis=1)
+    dmean = np.square(df).mean(axis=1)
+    mframe = pd.DataFrame({'sqsum':dmag,'logcount':dcnt,'sqvar':dsqvar,
+                           'var':dvar,'sqmean':dmean})
+    return mframe
+
 def summarize_vertices(df, pos_filter=False, whiten=False):
     """ Compute the mean and std deviation for each vertex accross time and optionally whiten it.
     That is to subtract off the mean and divide by the standard deviation
