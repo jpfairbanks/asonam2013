@@ -1,6 +1,12 @@
+"""Clustering coefficients analyzes both the number of triangles and the 
+clustering coefficient which is the number of triangles divided by degree squared 
+for each vertex.
+"""
+
 import kernelio as kio
 import kernel_analysis as ka
 import plotting as plg
+import paper_figures as pf
 import numpy as np
 import scipy as scipy
 import scipy.stats as stats
@@ -10,6 +16,7 @@ import argparse
 # Input Output
 DATA_DIR      = u'/scratch/jfairbanks/tri_bc_sandy/'
 POST_PROC_DIR = u'/scratch/jfairbanks/tri_bc_sandy/post_processing/'
+FIGUREPATH = u'./figures/'
 TIMEINDEX=pd.Index(np.arange(1,100,1))
 t = 99 #the time point of interest
 def load_data(data_dir, post_proc_dir, timeindex, timepoint):
@@ -42,9 +49,18 @@ def count_changes_plot(change_frame, ):
     - `axes`: the axes that contains the plot
     """
     vals = change_frame[[1,-1]]
+    ax = plt.axes()
+    ax.scatter(vals[-1], vals[1])
+    ax.set_title('batches by counting positive and negative derivatives')
+    ax.set_xlabel('number of decreasing vertices')
+    ax.set_ylabel('number of increasing vertices')
+    #ratios = ((vals[1]+0.0)/vals[-1])
+    #ratios.plot()
     axes = vals.plot(title='change in Local Clustering Coefficient over time')
     axes.set_xlabel('batch number')
     axes.set_ylabel('number of vertices')
+    fig = plt.gcf()
+    fig.savefig(FIGUREPATH+'tri-deriv-sign.png')
     return axes
 
 def save_globalcc_over_time(ccf, title=""):
@@ -132,7 +148,7 @@ if __name__ == '__main__':
         #timer.tic('summary')
         print("summarizing vertices")
         whitf = ka.summarize_vertices(logtrif, pos_filter=True, whiten=True)
-	whitf = whitf.join(namesf)
+        whitf = whitf.join(namesf)
         whitf.to_csv(POST_PROC_DIR+'whitened_tri_stats.csv')
         covm  = whitf.cov()
         print(covm)
@@ -144,16 +160,25 @@ if __name__ == '__main__':
     # Correlation analysis
         sample_times = ccf.columns
         display_starts = sample_times[:len(sample_times)/2:10]
-        rhoframe = ka.rhotk(ccf, sample_times, display_starts, method='pearson')
+        #rhoframe = ka.rhotk(ccf, sample_times, display_starts, method='pearson')
+        ax, rhoframe = pf.corr_model(ccf,degree=1, method='pearson')
         print(rhoframe)
         rhoframe.plot(title="Rho_cc(t,k)")
     # Differences Analysis
     if args.derivative:
         #how many vertices change their CC in each direction over time
-        change_frame = ka.count_change_directions(ccf,)
+        change_frame = ka.count_change_directions(ka.deriv(ccf))
         count_changes_plot(change_frame)
         diffst = (ccf[t]-ccf[t-2])/2
-        nzdiffst = diffst[diffst!=0].dropna()
+        diffframe = ka.deriv(ccf)
+        #plt.figure()
+        #diffframe[diffframe>0].mean(axis=0).plot()
+        #diffframe[diffframe<0].mean(axis=0).plot()
+        #ser = ka.flatten(diffframe)
+        #ser.hist()
+        print("we only model vertices that have a change bigger than 0.01")
+        nzdiffst = diffst[diffst.abs() > 0.01].dropna()
+        nzdiffst.plot(kind='kde')
         fig, axes = plt.subplots(1,1,1)
         plg.show_histogram_parameteric_fit(nzdiffst, t-1,)
         plg.cdf_plot(pd.DataFrame(nzdiffst))
@@ -165,10 +190,3 @@ if __name__ == '__main__':
     if args.pca:
         pjf = ka.pca(inframe)
         pd.scatter_matrix(pjf)
-
-
-    """bcf = kio.load_hdf_table(*kio.format_hdf_names(DATA_DIR,
-                                                   'betweenness_centrality',
-                                                   1,1000, 10))
-    df = ccf.join(bcf, how='inner', lsuffix='cc', rsuffix='bc')
-    """
