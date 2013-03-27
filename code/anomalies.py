@@ -75,9 +75,9 @@ if __name__ == '__main__':
         DATA_DIR = u'/scratch/jfairbanks/tri_bc_sandy/post_processing/'
         FILENAME = u'whitened_tri_stats.csv'
     df = get_data(DATA_DIR+FILENAME)
-    smallf = df.ix[::10]
+    smallf = df.ix[::1]
     data_mat = smallf[['mu','sigma']]
-    names = df['1'].str.lower()
+    names = df['1']#.str.lower()
     print(df.head(5))
     if args.ellipse:
         envelope = sklcov.EllipticEnvelope(assume_centered=True, contamination=.02)
