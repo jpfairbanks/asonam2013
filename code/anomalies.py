@@ -74,6 +74,7 @@ if __name__ == '__main__':
     if args.triangles:
         DATA_DIR = u'/scratch/jfairbanks/tri_bc_sandy/post_processing/'
         FILENAME = u'whitened_tri_stats.csv'
+    if args.clusteringcoefficient
     df = get_data(DATA_DIR+FILENAME)
     smallf = df.ix[::1]
     data_mat = smallf[['mu','sigma']]
@@ -94,7 +95,8 @@ if __name__ == '__main__':
         skl_out = pd.DataFrame({s.name:s for s in [scores, flags]})
     
     if args.svm:
-        svdetector = svm.OneClassSVM(kernel='rbf', cache_size=2000)
+        #nu determines the amount of outliers that we find we want ten percent
+        svdetector = svm.OneClassSVM(kernel='rbf',nu=.1,gamma=.3, cache_size=2000)
         print('fitting')
         svdetector.fit(data_mat)
         print('fitting done for SVM based detector')
