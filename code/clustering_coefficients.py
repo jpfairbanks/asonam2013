@@ -42,6 +42,7 @@ def model_func():
     """
     nzd = diffframe[diffframe!=0]
     mframe = ka.summarize_vertices_many(nzd)
+    mframe['count'] = (mframe['count']+0.0).replace(0.0,np.nan).dropna()
     return mframe
 
 # Plotting
@@ -194,8 +195,15 @@ if __name__ == '__main__':
 
     if args.model:
         mframe = model_func()
-        subframe = mframe[['logcount', 'sqmean','var']]
-        pd.scatter_matrix(subframe, alpha=.3,color='g')
+        subframe = mframe[['count', 'mean','var']]
+        maxes = np.log(trif[trif>0].max(axis=1)).dropna()
+        maxes.name = 'maxtri'
+        jf = subframe.join(maxes)
+        maxcc = ccf.max(axis=1).replace(0,np.nan).dropna()
+        maxcc.name = 'maxcc'
+        jf = jf.join(maxcc)
+        jf.save("ccfeatures.data")
+        pd.scatter_matrix(jf, alpha=.3,color='g')
 
     inframe = pd.DataFrame({'tri': trif[t],
                             'cc' : ccf[t]})

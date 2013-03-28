@@ -19,11 +19,13 @@ def summarize_vertices_many(df):
     - `mframe`: Vertices by features dataframe
 
     """
-    dmag, dcnt  = np.square(df).sum(axis=1), np.log1p(df.count(axis=1))
+    dmag, dcnt  = np.square(df).sum(axis=1), df.count(axis=1)
+    dlcnt = np.log1p(df.count(axis=1))
     dsqvar, dvar = np.square(df).var(axis=1), df.var(axis=1)
-    dmean = np.square(df).mean(axis=1)
-    mframe = pd.DataFrame({'sqsum':dmag,'logcount':dcnt,'sqvar':dsqvar,
-                           'var':dvar,'sqmean':dmean})
+    dsqmean = np.square(df).mean(axis=1)
+    dmean = df.mean(axis=1)
+    mframe = pd.DataFrame({'sqsum':dmag,'count':dcnt,'logcount':dlcnt,'sqvar':dsqvar,
+                           'var':dvar,'sqmean':dsqmean,'mean':dmean})
     return mframe
 
 def summarize_vertices(df, pos_filter=False, whiten=False):
