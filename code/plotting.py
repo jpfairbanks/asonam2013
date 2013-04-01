@@ -118,6 +118,8 @@ def cdf_plot(df, fitter=stats.norm,
         for x, y, col, name  in zip(domains, yvals, colors, names):
             ax.plot(x, y, label='%s model' %name,
                     color=col, linestyle='--')
+        for model in models:
+            print(model.args)
     return fig, ax
 
 def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):

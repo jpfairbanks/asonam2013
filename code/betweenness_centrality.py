@@ -336,12 +336,15 @@ if __name__ == '__main__':
     ##===========Show the CDF for the statistic at a fixed time========#
     if args.static:
         ##=======show density at fixed time t=============
-        #show_histogram_logbc(lf[t], t, median=True, fitter=stats.expon)
-        #show_histogram_logbc(lf[t], t, median=True, fitter=stats.beta)
+        filt = lf[lf!=0]
+        show_histogram_logbc(filt[t], t, median=True, fitter=stats.expon)
+        #show_histogram_logbc(filt[t], t, median=False, fitter=stats.norm)
         print('starting CDF static')
         timer.tic('static')
-        filt = lf[lf>(lf.median())]
-        staticf = lambda t: pf.cdf_plot_save(filt[[t-(STRIDE),t]])
+        #staticf = lambda t: pf.cdf_plot_save(filt[[t,]],fitter=stats.norm)
+        #staticf(t)
+        filtmed = lf[lf>(filt.median())]
+        staticf = lambda t: pf.cdf_plot_save(filtmed[[t,]],fitter=stats.expon)
         staticf(t)
         print('ending CDF static')
         timer.toc('static')
