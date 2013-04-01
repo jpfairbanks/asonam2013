@@ -4,8 +4,11 @@ import sklearn.covariance as sklcov
 import pandas as pd
 import numpy as np
 import scipy
+import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
-
+FIGURE_PATH = "./figures/"
+FIGURE_EXTENSION = 'pdf'
 def get_data(path):
     """Gets a frame containing 
     vtxid, stat1, stat2,..., names
@@ -19,6 +22,18 @@ def get_data(path):
     if args.triangles:
         df = df[['mu','sigma','1']]
     return df
+
+def save_description(gf):
+    """Prints out the description of a frame and saves it to a file"""
+    desctab = gf.describe().ix[[(-1.0,'mean'),(-1.0,'std'),(-1.0,'50%'),(1.0,'mean'),(1.0,'std'),(1.0,'50%')]]
+    desctab = desctab.T.stack()
+    print(desctab)
+    tablestr = desctab.to_latex()
+    #latexstr = "\begin{tabular}\n%s\n\end{tabular}"%tablestr
+    fp = open(DATA_DIR+'svmtable.tex', 'w')
+    fp.write(tablestr)
+    fp.close()
+    return tablestr
 
 def get_args():
     """Use argparse to make this a command line tool
@@ -67,7 +82,7 @@ def main():
 
     if args.svm:
         #nu determines the amount of outliers that we find we want ten percent
-        svdetector = svm.OneClassSVM(kernel='rbf',nu=.1,gamma=.3, cache_size=2000)
+        svdetector = svm.OneClassSVM(kernel='rbf',nu=.05,gamma=.3, cache_size=2000)
         print('fitting')
         svdetector.fit(data_mat)
         print('fitting done for SVM based detector')
@@ -89,16 +104,20 @@ def main():
     col4 = 'maxtri'
     if args.plot:
         print('plotting')
-        fig, axes = plt.subplots(1,4)
-        axes[0].scatter(x=labelf[col1], y=labelf[col2],
-                     s=10, alpha=.3, c=-1*labelf.pred)
-        axes[1].scatter(x=labelf[col3], y=labelf[col2],
-                     s=10, alpha=.3, c=-1*labelf.pred)
-        axes[2].scatter(x=labelf[col1], y=labelf[col3],
-                     s=10, alpha=.3, c=-1*labelf.pred)
-        axes[3].scatter(x=labelf[col3], y=labelf[col4],
-                     s=10, alpha=.3, c=-1*labelf.pred)
-        print('plotting')
+        pd.scatter_matrix(labelf[['mean','var','count','maxcc','maxtri']],marker='.', c=-1*labelf.pred,)# marker=labelf.pred+1)
+        fig = plt.gcf()
+        print('saving')
+        fig.savefig("%ssvm-outliers.%s"% (FIGURE_PATH, FIGURE_EXTENSION))
+        #fig, axes = plt.subplots(1,4)
+        #axes[0].scatter(x=labelf[col1], y=labelf[col2],
+        #             s=10, alpha=.3, c=-1*labelf.pred)
+        #axes[1].scatter(x=labelf[col3], y=labelf[col2],
+        #             s=10, alpha=.3, c=-1*labelf.pred)
+        #axes[2].scatter(x=labelf[col1], y=labelf[col3],
+        #             s=10, alpha=.3, c=-1*labelf.pred)
+        #axes[3].scatter(x=labelf[col3], y=labelf[col4],
+        #             s=10, alpha=.3, c=-1*labelf.pred)
+        #print('plotting')
     anoms = labelf[labelf.pred == -1]
     anoms = anoms.sort(columns=[col1, col2])
     print(anoms.head(20))
@@ -112,8 +131,6 @@ if __name__ == '__main__':
     data_mat = smallf[['mean','count','maxcc','maxtri']]
     print(df.head(5))
     labelf, anoms, model = main()
-    gf = labelf.groupby('pred')
+    gf = labelf[labelf.columns[:-1]].groupby('pred')
     print(gf.describe())
-    #pd.scatter_matrix(labelf, color=labelf.pred)
-    pd.scatter_matrix(labelf[labelf.pred == 1], color='b')
-    pd.scatter_matrix(labelf[labelf.pred == -1], color='r')
+    save_description(gf)
