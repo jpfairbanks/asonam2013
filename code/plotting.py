@@ -223,3 +223,17 @@ def scatter_vertices(df, alpha=.3):
     ax.set_xlabel(df.columns[0])
     ax.set_ylabel(df.columns[1])
     return fig, ax
+
+# # To see if we can apply a model
+def auto_correlate(df, columns='diff'):
+    """makes a autocorrelation plot of the columns
+
+    Arguments:
+    - `df`:
+    - `columns`:
+    """
+    # TODO: autocorrelation
+    correlogram = pd.tools.plotting.autocorrelation_plot
+    plt.figure()
+    ax = correlogram(df[columns].dropna())
+    return ax
