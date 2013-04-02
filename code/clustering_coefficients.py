@@ -40,10 +40,13 @@ def model_func():
     """ summarize each vertex into a NV x Properties frame
     Calling scatter plot on the return value will show some patterns in the data.
     """
+    sumframe = ka.summarize_vertices_many(ccf)[['mean','var',]]#'logcount']]
     nzd = diffframe[diffframe!=0]
-    mframe = ka.summarize_vertices_many(nzd)
-    mframe['count'] = (mframe['count']+0.0).replace(0.0,np.nan).dropna()
-    return mframe
+    mframe = ka.summarize_vertices_many(nzd)[['count', 'mean','var']]
+    #mframe['count'] = (mframe['count']+0.0).replace(0.0,np.nan).dropna()
+    frame = sumframe.join(mframe, lsuffix='value',rsuffix='deriv',how='outer')
+    print(frame.head())
+    return frame
 
 # Plotting
 # ========
@@ -194,16 +197,16 @@ if __name__ == '__main__':
         plg.cdf_plot(pd.DataFrame(nzdiffst))
 
     if args.model:
+
         mframe = model_func()
-        subframe = mframe[['count', 'mean','var']]
         maxes = np.log(trif[trif>0].max(axis=1)).dropna()
         maxes.name = 'maxtri'
-        jf = subframe.join(maxes)
+        jf = mframe.join(maxes)
         maxcc = ccf.max(axis=1).replace(0,np.nan).dropna()
         maxcc.name = 'maxcc'
         jf = jf.join(maxcc)
         jf.save("ccfeatures.data")
-        pd.scatter_matrix(jf, alpha=.3,color='g')
+        #pd.scatter_matrix(jf, alpha=.3,color='g')
 
     inframe = pd.DataFrame({'tri': trif[t],
                             'cc' : ccf[t]})

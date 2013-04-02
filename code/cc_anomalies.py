@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import scipy
 import matplotlib
-matplotlib.use('pdf')
+#matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 FIGURE_PATH = "./figures/"
 FIGURE_EXTENSION = 'pdf'
@@ -19,8 +19,6 @@ def get_data(path):
 
     """
     df = pd.load(path)
-    if args.triangles:
-        df = df[['mu','sigma','1']]
     return df
 
 def save_description(gf):
@@ -82,7 +80,7 @@ def main():
 
     if args.svm:
         #nu determines the amount of outliers that we find we want ten percent
-        svdetector = svm.OneClassSVM(kernel='rbf',nu=.05,gamma=.3, cache_size=2000)
+        svdetector = svm.OneClassSVM(kernel='rbf',nu=.10,gamma=.3, cache_size=2000)
         print('fitting')
         svdetector.fit(data_mat)
         print('fitting done for SVM based detector')
@@ -98,13 +96,11 @@ def main():
     labelf = labelf.join(skl_out)
     print('joining')
 
-    col1 = 'count'
-    col2 = 'maxcc'
-    col3 = 'mean'
-    col4 = 'maxtri'
     if args.plot:
         print('plotting')
-        pd.scatter_matrix(labelf[['mean','var','count','maxcc','maxtri']],marker='.', c=-1*labelf.pred,)# marker=labelf.pred+1)
+        pd.scatter_matrix(labelf[labelf.columns[:-2]],marker='.', c=-1.5*labelf.pred,)# marker=labelf.pred+1)
+        #pd.scatter_matrix(labelf[['mean','var','count']],marker='o', c=-2*labelf.pred,)# marker=labelf.pred+1)
+        #pd.scatter_matrix(labelf[['maxcc','maxtri']], marker=',', c=-1*labelf.pred)
         fig = plt.gcf()
         print('saving')
         fig.savefig("%ssvm-outliers.%s"% (FIGURE_PATH, FIGURE_EXTENSION))
@@ -119,16 +115,21 @@ def main():
         #             s=10, alpha=.3, c=-1*labelf.pred)
         #print('plotting')
     anoms = labelf[labelf.pred == -1]
-    anoms = anoms.sort(columns=[col1, col2])
+    #anoms = anoms.sort(columns=[col1, col2])
     print(anoms.head(20))
     return labelf, anoms, model
+
 if __name__ == '__main__':
     args = get_args()
     DATA_DIR = u'./'
     FILENAME = u'ccfeatures.data'
     df = get_data(DATA_DIR+FILENAME).dropna()
-    smallf = df.ix[::5]
-    data_mat = smallf[['mean','count','maxcc','maxtri']]
+    print(df)
+    df = (df - df.mean())/df.std()
+    print(df)
+    #smallf = df.ix[::5][['meanvalue','varvalue','meanderiv',]]
+    smallf = df.ix[::5][['meanvalue','varvalue','meanderiv','varderiv',]]#'maxcc','maxtri']]
+    data_mat = smallf  
     print(df.head(5))
     labelf, anoms, model = main()
     gf = labelf[labelf.columns[:-1]].groupby('pred')
