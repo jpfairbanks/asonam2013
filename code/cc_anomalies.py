@@ -8,7 +8,7 @@ import matplotlib
 #matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 FIGURE_PATH = "./figures/"
-FIGURE_EXTENSION = 'pdf'
+FIGURE_EXTENSION = 'png'
 def get_data(path):
     """Gets a frame containing 
     vtxid, stat1, stat2,..., names
@@ -98,10 +98,27 @@ def main():
 
     if args.plot:
         print('plotting')
-        pd.scatter_matrix(labelf[labelf.columns[:-2]],marker='.', c=-1.5*labelf.pred,)# marker=labelf.pred+1)
-        #pd.scatter_matrix(labelf[['mean','var','count']],marker='o', c=-2*labelf.pred,)# marker=labelf.pred+1)
-        #pd.scatter_matrix(labelf[['maxcc','maxtri']], marker=',', c=-1*labelf.pred)
+        active_cols = labelf.columns[:-2]
+        n = len(active_cols)
+        #fig = plt.figure(figsize=(5,7))
+        plots = plt.subplots(n,1,0)
+        axes  = plots[1]
+        fig   = plots[0]
+        fig.subplots_adjust(.09,.06,.94,.94,.2,.5)
+        for i in range(n):
+            ax = axes[i]
+            print(ax)
+            col = labelf.columns[i]
+            dcol = labelf[col]
+            pos = dcol[labelf.pred ==1]
+            neg = dcol[labelf.pred ==-1]
+            plt.sca(ax)
+            plt.hist([pos,neg], normed=True, color=['b','r'])
+            ax.set_title(col)
+        fig.savefig("%ssvm-outliers-hist.%s"% (FIGURE_PATH, FIGURE_EXTENSION))
+        axes = pd.scatter_matrix(labelf[active_cols],marker='.', c=-1.5*labelf.pred,)# marker=labelf.pred+1)
         fig = plt.gcf()
+        fig.subplots_adjust(.10,.12,.90,.90,.0,.0)
         print('saving')
         fig.savefig("%ssvm-outliers.%s"% (FIGURE_PATH, FIGURE_EXTENSION))
         #fig, axes = plt.subplots(1,4)

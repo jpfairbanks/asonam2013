@@ -16,7 +16,7 @@ from time import time as time
 import pandas as pd
 import matplotlib
 #if running without a display use this for generating to files
-matplotlib.use('Agg')
+matplotlib.use('svg')
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import numpy as np
@@ -24,7 +24,7 @@ import plotting as plg
 from plotting import *
 import kernel_analysis as ka
 FIGUREPATH = u'./figures/'
-FIGURE_EXTENSION = u'png'
+FIGURE_EXTENSION = u'svg'
 
 def bc_traces(lf, diffframe, vpool):
     """
