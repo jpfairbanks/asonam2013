@@ -136,7 +136,7 @@ def show_histogram_parameteric_fit(seq, t, quantile=0, fitter=stats.norm):
     scaling = 1
     if quantile:
         plt.axvline(x=seq.quantile(quantile), color='k',
-                    label='quantile %d' % quantile)
+                    label='quantile %.2f' % quantile)
         filtered = seq[seq>seq.quantile(quantile)]
         scaling = 1-quantile
     else:

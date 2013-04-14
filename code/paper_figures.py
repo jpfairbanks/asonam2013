@@ -24,7 +24,7 @@ import plotting as plg
 from plotting import *
 import kernel_analysis as ka
 FIGUREPATH = u'./figures/'
-FIGURE_EXTENSION = u'svg'
+FIGURE_EXTENSION = u'png'
 
 def bc_traces(lf, diffframe, vpool):
     """
@@ -73,7 +73,7 @@ def show_histogram_logbc(ls, t, median=False, fitter=stats.expon):
     """
     plt.figure()
     if median:
-        q = .5
+        q = 0.5
     else:
         q = False
     show_histogram_parameteric_fit(ls, t, q, fitter)
@@ -101,13 +101,14 @@ def cdf_plot_save_diffs(df):
     """
     Customize this function to chose colors, cdf vs survival func, kernel_name
     """
-    kernel_name='log(|dBC/dt|)'
+    kernel_name='|dlog(BC)/dt|'
     fig, ax = cdf_plot(df, fitter=stats.beta,)
     ax.legend(loc='best')
     ax.set_title('CDF of %s(v)'%kernel_name)
-    ax.set_xlabel('%s(v)'%kernel_name)
+    ax.set_xlabel('log(%s(v))'%kernel_name)
     ax.set_ylabel('CDF(%s(v))'%kernel_name)
     fig.savefig(FIGUREPATH+'cdf-deriv-logbc.%s'%FIGURE_EXTENSION,)
+    print('saved the right figure')
     return fig, ax
 
 
