@@ -39,6 +39,7 @@ The following files are the modules than can be imported for future programs.
     - paper_figures.py : specific functions for making plot for the paper presented at asonam.
     
 The following programs are intended to be used on the command line. Then can be modified in order to make new programs.
+  
     - multivariate.py : code for understanding multiple features at once.
     - anomalies.py : betweenness centrality based outlier detection
     - cc_anomalies.py : clustering coefficient based outlier detection.
