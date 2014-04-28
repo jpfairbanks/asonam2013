@@ -22,6 +22,7 @@ You should run the stinger code in order to generate the vertex features for the
 using the python code. The STINGER code of interest is in the file ~sandy.c~ and can be run with 
 
       code/stinger/sandy --help
+      code/stinger/sandy -n 10 -b 1000 -i 1000 -p ./ < data.csv
 
 Which will describe the options. You must specify the locations of data files and the computations that you 
 are interesting in computing, some options are betweenness centrality (approximate) and clustering coefficient
